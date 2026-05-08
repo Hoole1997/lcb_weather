@@ -137,24 +137,24 @@ sortIndex
 
 ## 阶段 3：Open-Meteo 网络层
 
-- [ ] 添加 Retrofit、OkHttp、kotlinx.serialization 依赖。
-- [ ] 添加 Kotlin serialization 插件。
-- [ ] 创建 Forecast API DTO。
-- [ ] 创建 Geocoding API DTO。
-- [ ] 创建 `OpenMeteoForecastApi`。
-- [ ] 创建 `OpenMeteoGeocodingApi`。
-- [ ] 创建 `WeatherRepository`，负责请求天气并映射为领域模型。
-- [ ] 创建 `GeocodingRepository`，负责搜索城市并映射为领域模型。
-- [ ] 支持 10 天天气预报请求。
-- [ ] 支持当前天气、小时天气、每日天气、指标卡片数据统一返回。
-- [ ] 处理网络错误、空响应、字段缺失。
-- [ ] 确认接口不需要 API Key。
-- [ ] 添加 Repository 层基础测试或至少添加可手动验证的 sample 请求。
+- [x] ✅ 添加 Retrofit、OkHttp、kotlinx.serialization 依赖。
+- [x] ✅ 添加 Kotlin serialization 插件。
+- [x] ✅ 创建 Forecast API DTO。
+- [x] ✅ 创建 Geocoding API DTO。
+- [x] ✅ 创建 `OpenMeteoForecastApi`。
+- [x] ✅ 创建 `OpenMeteoGeocodingApi`。
+- [x] ✅ 创建 `WeatherRepository`，负责请求天气并映射为领域模型。
+- [x] ✅ 创建 `GeocodingRepository`，负责搜索城市并映射为领域模型。
+- [x] ✅ 支持 10 天天气预报请求。
+- [x] ✅ 支持当前天气、小时天气、每日天气、指标卡片数据统一返回。
+- [x] ✅ 处理网络错误、空响应、字段缺失。
+- [x] ✅ 确认接口不需要 API Key。
+- [x] ✅ 添加 Repository 层基础测试或至少添加可手动验证的 sample 请求。
 
 阶段备注：
 
 ```text
-待填写。
+已完成 Open-Meteo 网络层。Gradle 已接入 kotlin-serialization 插件、Retrofit、OkHttp、converter-kotlinx-serialization 和 kotlinx-serialization-json。新增 remote/dto 下 ForecastDtos 与 GeocodingDtos；新增 OpenMeteoForecastApi、OpenMeteoGeocodingApi 和 NetworkModule，baseUrl 分别为 https://api.open-meteo.com/ 与 https://geocoding-api.open-meteo.com/，接口无需 API Key。WeatherRepository 使用当前/小时/每日字段常量请求 10 天天气，并映射 CurrentWeather、HourlyForecast、DailyForecast；GeocodingRepository 负责城市搜索并输出 CitySearchResult。网络错误通过 Result 包装，缺失 current 会返回失败，小时/每日缺字段会跳过或用 null 容错。测试新增 WeatherRepositoryTest 校验请求字段覆盖核心需求。验证命令：./gradlew :app:testLocalDebugUnitTest，结果 BUILD SUCCESSFUL。
 ```
 
 ## 阶段 4：本地存储
