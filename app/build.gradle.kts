@@ -263,6 +263,7 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.datastore.preferences)
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.foundation)
     implementation(libs.compose.material3)

@@ -159,23 +159,23 @@ sortIndex
 
 ## 阶段 4：本地存储
 
-- [ ] 添加 DataStore Preferences 依赖。
-- [ ] 创建 `CityStore`，保存和读取城市列表。
-- [ ] 城市列表使用 JSON 存储，保持排序字段 `sortIndex`。
-- [ ] 支持添加城市。
-- [ ] 支持删除城市。
-- [ ] 支持更新城市排序。
-- [ ] 支持读取当前选中城市 ID。
-- [ ] 支持设置当前选中城市。
-- [ ] 创建 `SettingsStore`，保存天气单位和主题设置。
-- [ ] 设置项变更后通过 Flow 通知 UI。
-- [ ] 城市列表变更后通过 Flow 通知 UI。
-- [ ] 处理首次无城市的空状态。
+- [x] ✅ 添加 DataStore Preferences 依赖。
+- [x] ✅ 创建 `CityStore`，保存和读取城市列表。
+- [x] ✅ 城市列表使用 JSON 存储，保持排序字段 `sortIndex`。
+- [x] ✅ 支持添加城市。
+- [x] ✅ 支持删除城市。
+- [x] ✅ 支持更新城市排序。
+- [x] ✅ 支持读取当前选中城市 ID。
+- [x] ✅ 支持设置当前选中城市。
+- [x] ✅ 创建 `SettingsStore`，保存天气单位和主题设置。
+- [x] ✅ 设置项变更后通过 Flow 通知 UI。
+- [x] ✅ 城市列表变更后通过 Flow 通知 UI。
+- [x] ✅ 处理首次无城市的空状态。
 
 阶段备注：
 
 ```text
-待填写。
+已完成本地存储层。app 模块接入 DataStore Preferences；新增 WeatherPreferences 统一创建 weather_preferences DataStore。CityStore 使用 JSON 字符串保存 List<SavedCity>，并提供 cities、selectedCityId、selectedCity Flow；支持 addCity、upsertCity、deleteCity、updateSort、setSelectedCity，删除当前城市时自动切到剩余首项，城市为空时清除 selectedCityId。SettingsStore 保存温度、风速、气压、能见度和主题枚举，settings Flow 默认返回 WeatherSettings。SavedCity 和 WeatherSettings/枚举已添加 kotlinx.serialization 支持。验证命令：./gradlew :app:testLocalDebugUnitTest，结果 BUILD SUCCESSFUL。
 ```
 
 ## 阶段 5：首次启动与系统定位

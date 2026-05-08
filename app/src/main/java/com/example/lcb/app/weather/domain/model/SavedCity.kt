@@ -1,5 +1,8 @@
 package com.example.lcb.app.weather.domain.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class SavedCity(
     val id: String,
     val name: String,
