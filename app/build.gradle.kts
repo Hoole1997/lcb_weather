@@ -276,6 +276,7 @@ dependencies {
     implementation(libs.retrofit.converter.kotlinx)
     implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.reorderable)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.config)

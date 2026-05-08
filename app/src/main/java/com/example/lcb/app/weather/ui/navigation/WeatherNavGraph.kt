@@ -21,6 +21,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.lcb.app.LcbApp
+import com.example.lcb.app.weather.ui.cities.CityManagerRoute
 import com.example.lcb.app.weather.ui.main.MainWeatherRoute
 
 @Composable
@@ -65,7 +66,10 @@ fun WeatherNavGraph(
         }
 
         composable(WeatherRoute.CityManager.route) {
-            CityManagerPlaceholder(
+            CityManagerRoute(
+                cityStore = container.cityStore,
+                settingsStore = container.settingsStore,
+                weatherRepository = container.weatherRepository,
                 onBack = navController::popBackStack,
                 onAddCity = { navController.navigate(WeatherRoute.AddCity.route) },
                 onOpenCity = { cityId ->
@@ -117,24 +121,6 @@ fun WeatherNavGraph(
             )
         }
     }
-}
-
-@Composable
-private fun CityManagerPlaceholder(
-    onBack: () -> Unit,
-    onAddCity: () -> Unit,
-    onOpenCity: (String) -> Unit
-) {
-    SimplePlaceholderScreen(
-        title = "城市管理",
-        body = "这里会展示类似 iOS 天气的城市卡片列表，支持搜索、删除和拖拽排序。",
-        primaryAction = "添加城市",
-        onPrimaryAction = onAddCity,
-        secondaryAction = "进入当前位置",
-        onSecondaryAction = { onOpenCity("current_location") },
-        tertiaryAction = "返回",
-        onTertiaryAction = onBack
-    )
 }
 
 @Composable
