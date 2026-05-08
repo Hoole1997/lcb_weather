@@ -417,8 +417,8 @@ sortIndex
 
 ## 阶段 13：质量验证
 
-- [ ] 运行 Gradle 编译。
-- [ ] 运行单元测试。
+- [x] ✅ 运行 Gradle 编译。
+- [x] ✅ 运行单元测试。
 - [ ] 手动验证首次启动定位成功流程。
 - [ ] 手动验证首次启动拒绝定位流程。
 - [ ] 手动验证定位失败后的搜索城市流程。
@@ -430,12 +430,12 @@ sortIndex
 - [ ] 手动验证主题设置。
 - [ ] 手动验证无网络错误态。
 - [ ] 手动验证 Open-Meteo 返回空数据时的容错。
-- [ ] 确认 release/debug flavor 编译不受影响。
+- [x] ✅ 确认 release/debug flavor 编译不受影响。
 
 阶段备注：
 
 ```text
-待填写。
+已完成自动化质量验证。执行命令：./gradlew :app:testLocalDebugUnitTest :app:compileLocalDebugKotlin :app:compileLocalReleaseKotlin :app:compileGoogleDebugKotlin，结果 BUILD SUCCESSFUL。覆盖 localDebug 单元测试、localDebug Kotlin 编译、localRelease Kotlin 编译、googleDebug Kotlin 编译，说明当前改动未破坏主要 flavor/buildType 的 Kotlin 编译链路。仍有既有第三方广告 SDK 资源/Manifest 警告，以及 LcbApp 既有 unchecked cast 警告；本阶段未处理这些非天气业务问题。当前环境没有运行中的设备或模拟器，首次定位授权、拒绝定位、添加/删除/拖拽城市、切换城市、单位/主题交互、无网络错误态和 Open-Meteo 空数据容错仍需在真机或模拟器上手动验证，因此对应条目保持未勾选。
 ```
 
 ## 待确认或后续增强
