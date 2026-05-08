@@ -113,26 +113,26 @@ sortIndex
 
 ## 阶段 2：领域模型与单位换算
 
-- [ ] 创建城市模型 `SavedCity`。
-- [ ] 创建天气聚合模型 `WeatherReport`。
-- [ ] 创建当前天气模型 `CurrentWeather`。
-- [ ] 创建小时天气模型 `HourlyForecast`。
-- [ ] 创建每日天气模型 `DailyForecast`。
-- [ ] 创建设置模型 `WeatherSettings`。
-- [ ] 创建温度单位枚举：摄氏度、华氏度。
-- [ ] 创建风速单位枚举：km/h、m/s、mph、kn。
-- [ ] 创建气压单位枚举：hPa、mmHg、inHg。
-- [ ] 创建能见度单位枚举：km、mile。
-- [ ] 创建主题枚举：跟随系统、浅色、深色。
-- [ ] 创建天气代码映射器，将 Open-Meteo `weather_code` 转成中文天气描述和图标语义。
-- [ ] 创建风向转换器，将角度转为中文方向，例如北风、东北风。
-- [ ] 创建单位换算工具，覆盖气压、能见度、温度展示和风速展示。
-- [ ] 添加基础单元测试，覆盖单位换算和天气代码映射。
+- [x] ✅ 创建城市模型 `SavedCity`。
+- [x] ✅ 创建天气聚合模型 `WeatherReport`。
+- [x] ✅ 创建当前天气模型 `CurrentWeather`。
+- [x] ✅ 创建小时天气模型 `HourlyForecast`。
+- [x] ✅ 创建每日天气模型 `DailyForecast`。
+- [x] ✅ 创建设置模型 `WeatherSettings`。
+- [x] ✅ 创建温度单位枚举：摄氏度、华氏度。
+- [x] ✅ 创建风速单位枚举：km/h、m/s、mph、kn。
+- [x] ✅ 创建气压单位枚举：hPa、mmHg、inHg。
+- [x] ✅ 创建能见度单位枚举：km、mile。
+- [x] ✅ 创建主题枚举：跟随系统、浅色、深色。
+- [x] ✅ 创建天气代码映射器，将 Open-Meteo `weather_code` 转成中文天气描述和图标语义。
+- [x] ✅ 创建风向转换器，将角度转为中文方向，例如北风、东北风。
+- [x] ✅ 创建单位换算工具，覆盖气压、能见度、温度展示和风速展示。
+- [x] ✅ 添加基础单元测试，覆盖单位换算和天气代码映射。
 
 阶段备注：
 
 ```text
-待填写。
+已完成领域模型与格式化工具。新增 SavedCity、WeatherReport、CurrentWeather、HourlyForecast、DailyForecast、WeatherSettings 及单位/主题枚举；新增 WeatherCodeMapper 将 Open-Meteo weather_code 映射为中文描述和 WeatherIcon 语义；新增 WindDirectionFormatter 和 UnitConverter，覆盖温度、风速、气压、能见度展示。测试文件位于 app/src/test/java/com/example/lcb/app/weather/domain/mapper，验证天气代码映射、风向和单位换算。验证命令：./gradlew :app:testLocalDebugUnitTest，结果 BUILD SUCCESSFUL。
 ```
 
 ## 阶段 3：Open-Meteo 网络层
