@@ -21,6 +21,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.lcb.app.LcbApp
+import com.example.lcb.app.weather.ui.about.AboutScreen
+import com.example.lcb.app.weather.ui.about.PrivacyScreen
 import com.example.lcb.app.weather.ui.addcity.AddCityRoute
 import com.example.lcb.app.weather.ui.cities.CityManagerRoute
 import com.example.lcb.app.weather.ui.main.MainWeatherRoute
@@ -109,21 +111,11 @@ fun WeatherNavGraph(
         }
 
         composable(WeatherRoute.About.route) {
-            SimplePlaceholderScreen(
-                title = "关于",
-                body = "关于页将在后续阶段展示 App 名称、版本号、数据来源和联系方式。",
-                primaryAction = "返回",
-                onPrimaryAction = navController::popBackStack
-            )
+            AboutScreen(onBack = navController::popBackStack)
         }
 
         composable(WeatherRoute.Privacy.route) {
-            SimplePlaceholderScreen(
-                title = "隐私协议",
-                body = "隐私协议将在后续阶段说明定位、城市本地保存和 Open-Meteo 数据来源。",
-                primaryAction = "返回",
-                onPrimaryAction = navController::popBackStack
-            )
+            PrivacyScreen(onBack = navController::popBackStack)
         }
     }
 }

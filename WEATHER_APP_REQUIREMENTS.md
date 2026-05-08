@@ -375,25 +375,25 @@ sortIndex
 
 ### 关于页
 
-- [ ] 显示 App 名称。
-- [ ] 显示版本号。
-- [ ] 版本号从 `BuildConfig.VERSION_NAME` 获取。
-- [ ] 显示数据来源说明。
-- [ ] 显示 Open-Meteo API 来源。
-- [ ] 显示联系方式占位或配置项。
+- [x] ✅ 显示 App 名称。
+- [x] ✅ 显示版本号。
+- [x] ✅ 版本号从 `BuildConfig.VERSION_NAME` 获取。
+- [x] ✅ 显示数据来源说明。
+- [x] ✅ 显示 Open-Meteo API 来源。
+- [x] ✅ 显示联系方式占位或配置项。
 
 ### 隐私协议
 
-- [ ] 说明定位用途：用于获取当前位置天气。
-- [ ] 说明城市数据保存方式：保存在本地设备。
-- [ ] 说明天气数据来源：Open-Meteo。
-- [ ] 说明不主动上传用户保存的城市列表到自有服务器。
-- [ ] 说明拒绝定位后仍可手动搜索城市。
+- [x] ✅ 说明定位用途：用于获取当前位置天气。
+- [x] ✅ 说明城市数据保存方式：保存在本地设备。
+- [x] ✅ 说明天气数据来源：Open-Meteo。
+- [x] ✅ 说明不主动上传用户保存的城市列表到自有服务器。
+- [x] ✅ 说明拒绝定位后仍可手动搜索城市。
 
 阶段备注：
 
 ```text
-待填写。
+已完成关于页与隐私协议。app_name 已从 LCB_Template 改为“天气”。新增 ui/about/AboutScreens.kt，并在 WeatherNavGraph 关于/隐私路由中替换占位页。关于页显示 App 名称、BuildConfig.VERSION_NAME、Open-Meteo 数据来源、Weather Forecast API/Geocoding API、联系方式占位和数据说明。隐私协议说明定位仅用于首次获取当前位置天气、拒绝定位仍可手动搜索、城市列表和设置保存在本地、不主动上传到自有服务器、天气请求会向 Open-Meteo 发送经纬度和单位参数。验证命令：./gradlew :app:compileLocalDebugKotlin，结果 BUILD SUCCESSFUL。
 ```
 
 ## 阶段 12：UI/UX 完善
