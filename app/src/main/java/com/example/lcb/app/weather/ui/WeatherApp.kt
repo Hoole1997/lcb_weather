@@ -32,6 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lcb.app.LcbApp
+import com.example.lcb.app.weather.ui.navigation.WeatherNavGraph
 import com.example.lcb.app.weather.ui.startup.StartupUiState
 import com.example.lcb.app.weather.ui.startup.StartupViewModel
 import com.example.lcb.app.weather.ui.theme.WeatherTheme
@@ -70,17 +71,27 @@ fun WeatherApp() {
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            WeatherAppPlaceholder(
-                state = startupState,
-                onRetryLocation = startupViewModel::retryLocation,
-                onChooseCity = startupViewModel::chooseCityManually
-            )
+            val canOpenApp = !startupState.isLoading &&
+                (startupState.activeCityId != null ||
+                    (startupState.needsCitySelection && startupState.errorMessage == null))
+            if (canOpenApp) {
+                WeatherNavGraph(
+                    startCityId = startupState.activeCityId,
+                    openAddCityFirst = startupState.needsCitySelection
+                )
+            } else {
+                StartupScreen(
+                    state = startupState,
+                    onRetryLocation = startupViewModel::retryLocation,
+                    onChooseCity = startupViewModel::chooseCityManually
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun WeatherAppPlaceholder(
+private fun StartupScreen(
     state: StartupUiState = StartupUiState(),
     onRetryLocation: () -> Unit = {},
     onChooseCity: () -> Unit = {}
