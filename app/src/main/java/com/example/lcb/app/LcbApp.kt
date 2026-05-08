@@ -2,6 +2,7 @@ package com.example.lcb.app
 
 import com.blankj.utilcode.util.LogUtils
 import com.example.lcb.app.ad.LcbAdInitializer
+import com.example.lcb.app.weather.di.AppContainer
 import net.corekit.metrics.adjust.AdjustTracker
 
 class LcbApp : com.leafmotivation.quizguessoncolor.Iej9ieio6r89e7ya() {
@@ -13,6 +14,10 @@ class LcbApp : com.leafmotivation.quizguessoncolor.Iej9ieio6r89e7ya() {
         fun backLaunchActivity() {
             lcbApp?.scansafeloc()
         }
+    }
+
+    val weatherContainer: AppContainer by lazy {
+        AppContainer(this)
     }
 
     override fun onCreate() {

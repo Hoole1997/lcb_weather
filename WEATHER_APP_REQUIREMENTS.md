@@ -180,26 +180,26 @@ sortIndex
 
 ## 阶段 5：首次启动与系统定位
 
-- [ ] 在 `AndroidManifest.xml` 添加定位权限。
-- [ ] 首选 `ACCESS_COARSE_LOCATION`，必要时兼容 `ACCESS_FINE_LOCATION`。
-- [ ] 创建定位数据源或定位 Repository。
-- [ ] App 首次启动时检查本地城市列表。
-- [ ] 如果已有城市，直接进入主天气页。
-- [ ] 如果无城市，请求系统定位权限。
-- [ ] 用户同意定位后，通过系统定位 API 获取经纬度。
-- [ ] 使用经纬度请求 Open-Meteo 天气接口。
-- [ ] 使用 Android `Geocoder` 尝试反查城市名、省份、国家。
-- [ ] 反查失败时城市名显示“当前位置”。
-- [ ] 将当前位置保存为默认城市，`sortIndex = 0`。
-- [ ] 当前位置城市的 `timezone` 默认使用 `auto`。
-- [ ] 用户拒绝定位后，跳转或引导到添加城市页。
-- [ ] 定位失败后，显示错误态并提供“搜索城市”和“重试定位”。
-- [ ] 定位流程不阻塞后续手动搜索城市。
+- [x] ✅ 在 `AndroidManifest.xml` 添加定位权限。
+- [x] ✅ 首选 `ACCESS_COARSE_LOCATION`，必要时兼容 `ACCESS_FINE_LOCATION`。
+- [x] ✅ 创建定位数据源或定位 Repository。
+- [x] ✅ App 首次启动时检查本地城市列表。
+- [x] ✅ 如果已有城市，直接进入主天气页。
+- [x] ✅ 如果无城市，请求系统定位权限。
+- [x] ✅ 用户同意定位后，通过系统定位 API 获取经纬度。
+- [x] ✅ 使用经纬度请求 Open-Meteo 天气接口。
+- [x] ✅ 使用 Android `Geocoder` 尝试反查城市名、省份、国家。
+- [x] ✅ 反查失败时城市名显示“当前位置”。
+- [x] ✅ 将当前位置保存为默认城市，`sortIndex = 0`。
+- [x] ✅ 当前位置城市的 `timezone` 默认使用 `auto`。
+- [x] ✅ 用户拒绝定位后，跳转或引导到添加城市页。
+- [x] ✅ 定位失败后，显示错误态并提供“搜索城市”和“重试定位”。
+- [x] ✅ 定位流程不阻塞后续手动搜索城市。
 
 阶段备注：
 
 ```text
-待填写。
+已完成首次启动定位流程。AndroidManifest 增加 ACCESS_COARSE_LOCATION 与 ACCESS_FINE_LOCATION，Compose 根入口优先请求 ACCESS_COARSE_LOCATION。新增 AppContainer，在 LcbApp 中懒加载组装 CityStore、SettingsStore、WeatherRepository、GeocodingRepository、LocationRepository。LocationRepository 使用 Android LocationManager，优先 NETWORK_PROVIDER，兼容 GPS_PROVIDER；先取 30 分钟内 lastKnownLocation，否则单次 requestLocationUpdates，10 秒超时；Geocoder 反查城市名、省份、国家，失败时名称使用“当前位置”，timezone 保存 auto。StartupViewModel 启动时检查本地城市：有城市直接 Ready，无城市则请求定位；授权后定位并调用 WeatherRepository 请求一次 Open-Meteo 天气，成功后保存 current_location；拒绝或失败时进入手动搜索引导状态并提供重试定位。当前 UI 仍是阶段性占位，阶段 6 会接入正式导航。验证命令：./gradlew :app:compileLocalDebugKotlin，结果 BUILD SUCCESSFUL。
 ```
 
 ## 阶段 6：导航结构
