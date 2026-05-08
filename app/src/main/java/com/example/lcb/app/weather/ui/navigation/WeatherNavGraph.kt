@@ -21,6 +21,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.lcb.app.LcbApp
+import com.example.lcb.app.weather.ui.addcity.AddCityRoute
 import com.example.lcb.app.weather.ui.cities.CityManagerRoute
 import com.example.lcb.app.weather.ui.main.MainWeatherRoute
 
@@ -83,7 +84,9 @@ fun WeatherNavGraph(
         }
 
         composable(WeatherRoute.AddCity.route) {
-            AddCityPlaceholder(
+            AddCityRoute(
+                cityStore = container.cityStore,
+                geocodingRepository = container.geocodingRepository,
                 onBack = navController::popBackStack,
                 onAdded = { cityId ->
                     navController.navigate(WeatherRoute.Main.create(cityId)) {
@@ -121,21 +124,6 @@ fun WeatherNavGraph(
             )
         }
     }
-}
-
-@Composable
-private fun AddCityPlaceholder(
-    onBack: () -> Unit,
-    onAdded: (String) -> Unit
-) {
-    SimplePlaceholderScreen(
-        title = "添加城市",
-        body = "这里会通过 Open-Meteo Geocoding API 搜索城市并保存到本地。",
-        primaryAction = "模拟添加",
-        onPrimaryAction = { onAdded("manual_city") },
-        secondaryAction = "返回",
-        onSecondaryAction = onBack
-    )
 }
 
 @Composable
