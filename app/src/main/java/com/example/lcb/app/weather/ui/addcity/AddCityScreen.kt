@@ -143,7 +143,9 @@ private fun SearchResults(
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            text = item.city.subtitle.ifBlank { "经纬度 ${item.city.latitude}, ${item.city.longitude}" },
+                            text = item.city.subtitle.ifBlank {
+                                "纬度 %.4f · 经度 %.4f".format(item.city.latitude, item.city.longitude)
+                            },
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

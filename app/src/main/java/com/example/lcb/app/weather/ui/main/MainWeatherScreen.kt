@@ -451,9 +451,11 @@ private fun LoadingWeatherState(message: String?, onRetry: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        CircularProgressIndicator(color = Color(0xFFF9FCF8))
+        if (message == null) {
+            CircularProgressIndicator(color = Color(0xFFF9FCF8))
+        }
         Text(
-            modifier = Modifier.padding(top = 16.dp),
+            modifier = Modifier.padding(top = if (message == null) 16.dp else 0.dp),
             text = message ?: "正在加载天气",
             color = Color(0xFFF9FCF8),
             style = MaterialTheme.typography.bodyLarge

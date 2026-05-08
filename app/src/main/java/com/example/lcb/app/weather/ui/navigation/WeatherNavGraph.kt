@@ -1,19 +1,8 @@
 package com.example.lcb.app.weather.ui.navigation
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -116,58 +105,6 @@ fun WeatherNavGraph(
 
         composable(WeatherRoute.Privacy.route) {
             PrivacyScreen(onBack = navController::popBackStack)
-        }
-    }
-}
-
-@Composable
-private fun SimplePlaceholderScreen(
-    title: String,
-    body: String,
-    primaryAction: String,
-    onPrimaryAction: () -> Unit,
-    secondaryAction: String? = null,
-    onSecondaryAction: (() -> Unit)? = null,
-    tertiaryAction: String? = null,
-    onTertiaryAction: (() -> Unit)? = null
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .systemBarsPadding()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.displaySmall,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        Text(
-            modifier = Modifier.padding(top = 12.dp, bottom = 24.dp),
-            text = body,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Button(onClick = onPrimaryAction) {
-            Text(text = primaryAction)
-        }
-        if (secondaryAction != null && onSecondaryAction != null) {
-            OutlinedButton(
-                modifier = Modifier.padding(top = 10.dp),
-                onClick = onSecondaryAction
-            ) {
-                Text(text = secondaryAction)
-            }
-        }
-        if (tertiaryAction != null && onTertiaryAction != null) {
-            OutlinedButton(
-                modifier = Modifier.padding(top = 10.dp),
-                onClick = onTertiaryAction
-            ) {
-                Text(text = tertiaryAction)
-            }
         }
     }
 }
