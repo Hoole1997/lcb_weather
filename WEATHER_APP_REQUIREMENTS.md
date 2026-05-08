@@ -95,20 +95,20 @@ sortIndex
 
 ## 阶段 1：Compose 基础设施
 
-- [ ] 在 `app/build.gradle.kts` 中启用 Compose build feature。
-- [ ] 添加 Kotlin Compose 插件。
-- [ ] 添加 Compose、Material3、Navigation Compose、Lifecycle ViewModel Compose 依赖。
-- [ ] 将 `MainActivity` 从 XML `setContentView` 改为 Compose `setContent`。
-- [ ] 保留 `enableEdgeToEdge()`，并用 Compose 处理系统栏间距。
-- [ ] 创建 `WeatherApp` 作为 Compose 根入口。
-- [ ] 创建 Material3 主题，支持系统深浅色。
-- [ ] 确认原有广告、metrics 初始化不被破坏。
-- [ ] 编译通过。
+- [x] ✅ 在 `app/build.gradle.kts` 中启用 Compose build feature。
+- [x] ✅ 添加 Kotlin Compose 插件。
+- [x] ✅ 添加 Compose、Material3、Navigation Compose、Lifecycle ViewModel Compose 依赖。
+- [x] ✅ 将 `MainActivity` 从 XML `setContentView` 改为 Compose `setContent`。
+- [x] ✅ 保留 `enableEdgeToEdge()`，并用 Compose 处理系统栏间距。
+- [x] ✅ 创建 `WeatherApp` 作为 Compose 根入口。
+- [x] ✅ 创建 Material3 主题，支持系统深浅色。
+- [x] ✅ 确认原有广告、metrics 初始化不被破坏。
+- [x] ✅ 编译通过。
 
 阶段备注：
 
 ```text
-待填写。
+已完成 Compose 基础设施。根 Gradle 增加 kotlin-compose 插件，app 模块启用 compose build feature 并接入 activity-compose、compose foundation/material3/icons/ui/tooling、navigation-compose、lifecycle-viewmodel-compose。MainActivity 已改为 ComponentActivity + setContent，保留 enableEdgeToEdge；Application 层 LcbApp 未改动，广告和 metrics 初始化仍在原边界内。新增 WeatherApp、WeatherTheme、Type，当前仅显示 Compose 占位 UI，后续阶段会替换为真实导航和天气页面。验证命令：./gradlew :app:compileLocalDebugKotlin，结果 BUILD SUCCESSFUL；仅有既有第三方 SDK 资源/Manifest 警告和 LcbApp unchecked cast 警告。
 ```
 
 ## 阶段 2：领域模型与单位换算
