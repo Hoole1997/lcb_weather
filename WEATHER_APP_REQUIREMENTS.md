@@ -339,36 +339,36 @@ sortIndex
 
 ### 单位设置
 
-- [ ] 温度单位支持摄氏度。
-- [ ] 温度单位支持华氏度。
-- [ ] 风力单位支持 km/h。
-- [ ] 风力单位支持 m/s。
-- [ ] 风力单位支持 mph。
-- [ ] 风力单位支持节。
-- [ ] 气压单位支持 hPa。
-- [ ] 气压单位支持 mmHg。
-- [ ] 气压单位支持 inHg。
-- [ ] 能见度单位支持 km。
-- [ ] 能见度单位支持 mile。
-- [ ] 单位变更后立即保存。
-- [ ] 单位变更后主天气页展示立即更新。
+- [x] ✅ 温度单位支持摄氏度。
+- [x] ✅ 温度单位支持华氏度。
+- [x] ✅ 风力单位支持 km/h。
+- [x] ✅ 风力单位支持 m/s。
+- [x] ✅ 风力单位支持 mph。
+- [x] ✅ 风力单位支持节。
+- [x] ✅ 气压单位支持 hPa。
+- [x] ✅ 气压单位支持 mmHg。
+- [x] ✅ 气压单位支持 inHg。
+- [x] ✅ 能见度单位支持 km。
+- [x] ✅ 能见度单位支持 mile。
+- [x] ✅ 单位变更后立即保存。
+- [x] ✅ 单位变更后主天气页展示立即更新。
 
 ### 主题设置
 
-- [ ] 主题支持跟随系统。
-- [ ] 主题支持浅色。
-- [ ] 主题支持深色。
-- [ ] 主题切换即时生效。
+- [x] ✅ 主题支持跟随系统。
+- [x] ✅ 主题支持浅色。
+- [x] ✅ 主题支持深色。
+- [x] ✅ 主题切换即时生效。
 
 ### 其他入口
 
-- [ ] 设置页包含关于入口。
-- [ ] 设置页包含隐私协议入口。
+- [x] ✅ 设置页包含关于入口。
+- [x] ✅ 设置页包含隐私协议入口。
 
 阶段备注：
 
 ```text
-待填写。
+已完成设置页。新增 ui/settings/SettingsViewModel 与 SettingsScreen，并在 WeatherNavGraph 设置路由中替换占位页。设置页使用分组卡片和 AssistChip 即时选择温度、风力、气压、能见度和主题；所有选择直接写入 SettingsStore。WeatherApp 根入口收集 SettingsStore.settings，根据 ThemeMode.System/Light/Dark 传入 WeatherTheme，因此主题切换即时生效。MainWeatherViewModel 和 CityManagerViewModel 已收集 settings Flow，单位变化会刷新天气请求和展示。设置页包含关于与隐私协议入口。验证命令：./gradlew :app:compileLocalDebugKotlin，结果 BUILD SUCCESSFUL。
 ```
 
 ## 阶段 11：关于页与隐私协议

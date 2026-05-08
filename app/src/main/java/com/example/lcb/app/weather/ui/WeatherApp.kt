@@ -4,6 +4,7 @@ import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +33,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lcb.app.LcbApp
+import com.example.lcb.app.weather.domain.model.ThemeMode
+import com.example.lcb.app.weather.domain.model.WeatherSettings
 import com.example.lcb.app.weather.ui.navigation.WeatherNavGraph
 import com.example.lcb.app.weather.ui.startup.StartupUiState
 import com.example.lcb.app.weather.ui.startup.StartupViewModel
@@ -41,6 +44,13 @@ import com.example.lcb.app.weather.ui.theme.WeatherTheme
 fun WeatherApp() {
     val context = LocalContext.current
     val container = (context.applicationContext as LcbApp).weatherContainer
+    val settings by container.settingsStore.settings.collectAsState(initial = WeatherSettings())
+    val systemDarkTheme = isSystemInDarkTheme()
+    val darkTheme = when (settings.themeMode) {
+        ThemeMode.System -> systemDarkTheme
+        ThemeMode.Light -> false
+        ThemeMode.Dark -> true
+    }
     val startupViewModel: StartupViewModel = viewModel(
         factory = StartupViewModel.Factory(
             cityStore = container.cityStore,
@@ -66,7 +76,7 @@ fun WeatherApp() {
         }
     }
 
-    WeatherTheme {
+    WeatherTheme(darkTheme = darkTheme) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background

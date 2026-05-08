@@ -24,6 +24,7 @@ import com.example.lcb.app.LcbApp
 import com.example.lcb.app.weather.ui.addcity.AddCityRoute
 import com.example.lcb.app.weather.ui.cities.CityManagerRoute
 import com.example.lcb.app.weather.ui.main.MainWeatherRoute
+import com.example.lcb.app.weather.ui.settings.SettingsRoute
 
 @Composable
 fun WeatherNavGraph(
@@ -99,7 +100,8 @@ fun WeatherNavGraph(
         }
 
         composable(WeatherRoute.Settings.route) {
-            SettingsPlaceholder(
+            SettingsRoute(
+                settingsStore = container.settingsStore,
                 onBack = navController::popBackStack,
                 onAbout = { navController.navigate(WeatherRoute.About.route) },
                 onPrivacy = { navController.navigate(WeatherRoute.Privacy.route) }
@@ -124,24 +126,6 @@ fun WeatherNavGraph(
             )
         }
     }
-}
-
-@Composable
-private fun SettingsPlaceholder(
-    onBack: () -> Unit,
-    onAbout: () -> Unit,
-    onPrivacy: () -> Unit
-) {
-    SimplePlaceholderScreen(
-        title = "设置",
-        body = "这里会管理温度、风力、气压、能见度单位和主题。",
-        primaryAction = "关于",
-        onPrimaryAction = onAbout,
-        secondaryAction = "隐私协议",
-        onSecondaryAction = onPrivacy,
-        tertiaryAction = "返回",
-        onTertiaryAction = onBack
-    )
 }
 
 @Composable
