@@ -11,6 +11,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -19,6 +20,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.lcb.app.LcbApp
+import com.example.lcb.app.weather.ui.main.MainWeatherRoute
 
 @Composable
 fun WeatherNavGraph(
@@ -32,6 +35,7 @@ fun WeatherNavGraph(
     } else {
         WeatherRoute.Main.create(startCityId)
     }
+    val container = (LocalContext.current.applicationContext as LcbApp).weatherContainer
 
     NavHost(
         navController = navController,
@@ -49,10 +53,14 @@ fun WeatherNavGraph(
             )
         ) { backStackEntry ->
             val cityId = backStackEntry.arguments?.getString("cityId")
-            MainWeatherPlaceholder(
+            MainWeatherRoute(
                 cityId = cityId,
+                cityStore = container.cityStore,
+                settingsStore = container.settingsStore,
+                weatherRepository = container.weatherRepository,
                 onOpenCities = { navController.navigate(WeatherRoute.CityManager.route) },
-                onOpenSettings = { navController.navigate(WeatherRoute.Settings.route) }
+                onOpenSettings = { navController.navigate(WeatherRoute.Settings.route) },
+                onAddCity = { navController.navigate(WeatherRoute.AddCity.route) }
             )
         }
 
@@ -109,22 +117,6 @@ fun WeatherNavGraph(
             )
         }
     }
-}
-
-@Composable
-private fun MainWeatherPlaceholder(
-    cityId: String?,
-    onOpenCities: () -> Unit,
-    onOpenSettings: () -> Unit
-) {
-    SimplePlaceholderScreen(
-        title = "主天气页",
-        body = "当前城市：${cityId ?: "默认城市"}。下一阶段会替换为真实天气总览。",
-        primaryAction = "城市管理",
-        onPrimaryAction = onOpenCities,
-        secondaryAction = "设置",
-        onSecondaryAction = onOpenSettings
-    )
 }
 
 @Composable
