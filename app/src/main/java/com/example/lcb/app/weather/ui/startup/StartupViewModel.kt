@@ -1,8 +1,10 @@
 package com.example.lcb.app.weather.ui.startup
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.lcb.app.R
 import com.example.lcb.app.weather.data.local.CityStore
 import com.example.lcb.app.weather.data.local.SettingsStore
 import com.example.lcb.app.weather.data.repository.LocationRepository
@@ -18,7 +20,8 @@ data class StartupUiState(
     val needsLocationPermission: Boolean = false,
     val needsCitySelection: Boolean = false,
     val activeCityId: String? = null,
-    val message: String = "正在准备天气数据",
+    @param:StringRes val messageRes: Int = R.string.startup_preparing_weather,
+    @param:StringRes val errorMessageRes: Int? = null,
     val errorMessage: String? = null
 )
 
@@ -43,7 +46,7 @@ class StartupViewModel(
                 _uiState.value = StartupUiState(
                     isLoading = false,
                     activeCityId = selected ?: cities.first().id,
-                    message = "已加载城市"
+                    messageRes = R.string.startup_cities_loaded
                 )
                 return@launch
             }
@@ -54,7 +57,7 @@ class StartupViewModel(
                 _uiState.value = StartupUiState(
                     isLoading = false,
                     needsLocationPermission = true,
-                    message = "需要定位权限获取当前位置天气"
+                    messageRes = R.string.startup_location_permission_needed
                 )
             }
         }
@@ -67,8 +70,8 @@ class StartupViewModel(
             _uiState.value = StartupUiState(
                 isLoading = false,
                 needsCitySelection = true,
-                message = "可以手动搜索城市",
-                errorMessage = "未获得定位权限"
+                messageRes = R.string.startup_manual_city_available,
+                errorMessageRes = R.string.location_permission_denied
             )
         }
     }
@@ -80,7 +83,7 @@ class StartupViewModel(
             _uiState.value = StartupUiState(
                 isLoading = false,
                 needsLocationPermission = true,
-                message = "需要定位权限获取当前位置天气"
+                messageRes = R.string.startup_location_permission_needed
             )
         }
     }
@@ -91,7 +94,8 @@ class StartupViewModel(
                 isLoading = false,
                 needsLocationPermission = false,
                 needsCitySelection = true,
-                message = "搜索并添加城市",
+                messageRes = R.string.startup_search_add_city,
+                errorMessageRes = null,
                 errorMessage = null
             )
         }
@@ -101,14 +105,15 @@ class StartupViewModel(
         viewModelScope.launch {
             _uiState.value = StartupUiState(
                 isLoading = true,
-                message = "正在获取当前位置天气"
+                messageRes = R.string.startup_loading_current_weather
             )
             val city = locationRepository.resolveCurrentCity().getOrElse { error ->
                 _uiState.value = StartupUiState(
                     isLoading = false,
                     needsCitySelection = true,
-                    message = "可以手动搜索城市",
-                    errorMessage = error.message ?: "无法获取当前位置"
+                    messageRes = R.string.startup_manual_city_available,
+                    errorMessage = error.message,
+                    errorMessageRes = if (error.message == null) R.string.location_unavailable else null
                 )
                 return@launch
             }
@@ -119,8 +124,13 @@ class StartupViewModel(
                 _uiState.value = StartupUiState(
                     isLoading = false,
                     needsCitySelection = true,
-                    message = "可以手动搜索城市",
-                    errorMessage = weather.exceptionOrNull()?.message ?: "当前位置天气获取失败"
+                    messageRes = R.string.startup_manual_city_available,
+                    errorMessage = weather.exceptionOrNull()?.message,
+                    errorMessageRes = if (weather.exceptionOrNull()?.message == null) {
+                        R.string.current_weather_load_failed
+                    } else {
+                        null
+                    }
                 )
                 return@launch
             }
@@ -130,7 +140,7 @@ class StartupViewModel(
             _uiState.value = StartupUiState(
                 isLoading = false,
                 activeCityId = city.id,
-                message = "已加载当前位置"
+                messageRes = R.string.startup_current_location_loaded
             )
         }
     }

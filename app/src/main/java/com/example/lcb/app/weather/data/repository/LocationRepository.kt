@@ -11,6 +11,7 @@ import android.location.LocationManager
 import android.os.Bundle
 import android.os.Looper
 import androidx.core.content.ContextCompat
+import com.example.lcb.app.R
 import com.example.lcb.app.weather.domain.model.SavedCity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -43,8 +44,9 @@ class LocationRepository(
             val address = reverseGeocode(location)
             SavedCity(
                 id = CURRENT_LOCATION_ID,
-                name = address.cityName ?: "当前位置",
+                name = address.cityName ?: context.getString(R.string.current_location),
                 country = address.country,
+                countryCode = address.countryCode,
                 admin1 = address.admin1,
                 latitude = location.latitude,
                 longitude = location.longitude,
@@ -120,7 +122,8 @@ class LocationRepository(
                         ?: address?.subAdminArea
                         ?: address?.adminArea,
                     admin1 = address?.adminArea,
-                    country = address?.countryName
+                    country = address?.countryName,
+                    countryCode = address?.countryCode
                 )
             }.getOrDefault(AddressInfo())
         }
@@ -135,7 +138,8 @@ class LocationRepository(
     private data class AddressInfo(
         val cityName: String? = null,
         val admin1: String? = null,
-        val country: String? = null
+        val country: String? = null,
+        val countryCode: String? = null
     )
 
     companion object {

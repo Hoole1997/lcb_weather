@@ -3,6 +3,7 @@ package com.example.lcb.app.weather.data.repository
 import com.example.lcb.app.weather.data.remote.OpenMeteoGeocodingApi
 import com.example.lcb.app.weather.data.remote.dto.GeocodingResultDto
 import com.example.lcb.app.weather.domain.model.CitySearchResult
+import java.util.Locale
 
 class GeocodingRepository(
     private val api: OpenMeteoGeocodingApi
@@ -14,7 +15,10 @@ class GeocodingRepository(
         }
 
         return runCatching {
-            api.searchCities(name = normalizedKeyword)
+            api.searchCities(
+                name = normalizedKeyword,
+                language = Locale.getDefault().language.toSupportedGeocodingLanguage()
+            )
                 .results
                 .map { it.toCitySearchResult() }
         }
@@ -25,6 +29,7 @@ class GeocodingRepository(
             id = "openmeteo-$id",
             name = name,
             country = country,
+            countryCode = countryCode,
             admin1 = admin1,
             latitude = latitude,
             longitude = longitude,
@@ -34,5 +39,10 @@ class GeocodingRepository(
 
     companion object {
         private const val MIN_QUERY_LENGTH = 2
+        private val SupportedGeocodingLanguages = setOf("zh", "en", "ja", "ko", "fr", "de", "es", "pt", "it", "ru")
+
+        private fun String.toSupportedGeocodingLanguage(): String {
+            return takeIf { it in SupportedGeocodingLanguages } ?: "en"
+        }
     }
 }

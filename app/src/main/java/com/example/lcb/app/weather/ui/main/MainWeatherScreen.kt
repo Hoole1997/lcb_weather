@@ -1,11 +1,15 @@
 package com.example.lcb.app.weather.ui.main
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,16 +23,20 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -38,21 +46,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.lcb.app.R
 import com.example.lcb.app.weather.data.local.CityStore
 import com.example.lcb.app.weather.data.local.SettingsStore
 import com.example.lcb.app.weather.data.repository.WeatherRepository
 import com.example.lcb.app.weather.domain.mapper.UnitConverter
-import com.example.lcb.app.weather.domain.mapper.WindDirectionFormatter
 import com.example.lcb.app.weather.domain.model.CurrentWeather
 import com.example.lcb.app.weather.domain.model.DailyForecast
 import com.example.lcb.app.weather.domain.model.HourlyForecast
-import com.example.lcb.app.weather.domain.model.WeatherIcon
 import com.example.lcb.app.weather.domain.model.WeatherReport
 import com.example.lcb.app.weather.domain.model.WeatherSettings
+import com.example.lcb.app.weather.ui.theme.GlassCard
+import com.example.lcb.app.weather.ui.theme.GlassIconButton
+import com.example.lcb.app.weather.ui.theme.GlassOnSurface
+import com.example.lcb.app.weather.ui.theme.GlassOnSurfaceFaint
+import com.example.lcb.app.weather.ui.theme.GlassOnSurfaceMuted
+import com.example.lcb.app.weather.ui.theme.MetricIcons
+import com.example.lcb.app.weather.ui.theme.WeatherSkyBackground
+import com.example.lcb.app.weather.ui.theme.toVector
 
 @Composable
 fun MainWeatherRoute(
@@ -77,6 +94,7 @@ fun MainWeatherRoute(
     MainWeatherScreen(
         state = state,
         onRetry = viewModel::retry,
+        onRefresh = viewModel::refresh,
         onOpenCities = onOpenCities,
         onOpenSettings = onOpenSettings,
         onAddCity = onAddCity
@@ -87,63 +105,80 @@ fun MainWeatherRoute(
 fun MainWeatherScreen(
     state: MainWeatherUiState,
     onRetry: () -> Unit,
+    onRefresh: () -> Unit,
     onOpenCities: () -> Unit,
     onOpenSettings: () -> Unit,
     onAddCity: () -> Unit
 ) {
     val report = state.report
-    val colors = weatherColors(report?.current)
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Brush.verticalGradient(colors))
-    ) {
+    val loadingError = state.errorMessage ?: state.errorMessageRes?.let { stringResource(it) }
+    WeatherSkyBackground(current = report?.current) {
         when {
             state.hasNoCity -> EmptyWeatherState(onAddCity = onAddCity)
             report != null -> WeatherContent(
                 state = state,
                 report = report,
                 onRetry = onRetry,
+                onRefresh = onRefresh,
                 onOpenCities = onOpenCities,
                 onOpenSettings = onOpenSettings
             )
-            else -> LoadingWeatherState(message = state.errorMessage, onRetry = onRetry)
+            else -> LoadingWeatherState(message = loadingError, onRetry = onRetry)
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun WeatherContent(
     state: MainWeatherUiState,
     report: WeatherReport,
     onRetry: () -> Unit,
+    onRefresh: () -> Unit,
     onOpenCities: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
-    LazyColumn(
+    val pullState = rememberPullToRefreshState()
+    val contentError = state.errorMessage ?: state.errorMessageRes?.let { stringResource(it) }
+    PullToRefreshBox(
         modifier = Modifier
             .fillMaxSize()
             .systemBarsPadding(),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(
-            start = 18.dp,
-            end = 18.dp,
-            bottom = 28.dp
-        ),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            WeatherTopBar(
-                cityName = state.city?.name ?: report.city.name,
-                onOpenCities = onOpenCities,
-                onOpenSettings = onOpenSettings
+        state = pullState,
+        isRefreshing = state.isRefreshing,
+        onRefresh = onRefresh,
+        indicator = {
+            PullToRefreshDefaults.Indicator(
+                modifier = Modifier.align(Alignment.TopCenter),
+                isRefreshing = state.isRefreshing,
+                state = pullState,
+                containerColor = Color.White.copy(alpha = 0.20f),
+                color = GlassOnSurface
             )
         }
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = 18.dp,
+                end = 18.dp,
+                bottom = 32.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                WeatherTopBar(
+                    cityName = state.city?.name ?: report.city.name,
+                    onOpenCities = onOpenCities,
+                    onOpenSettings = onOpenSettings
+                )
+            }
         item {
             CurrentWeatherHero(
                 current = report.current,
                 settings = state.settings,
                 onRetry = onRetry,
-                errorMessage = state.errorMessage,
+                errorMessage = contentError,
                 isLoading = state.isLoading
             )
         }
@@ -166,6 +201,7 @@ private fun WeatherContent(
                 settings = state.settings
             )
         }
+        }
     }
 }
 
@@ -178,32 +214,39 @@ private fun WeatherTopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 10.dp),
+            .padding(top = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(
+        GlassIconButton(
+            icon = Icons.Default.Menu,
+            contentDescription = stringResource(R.string.city_manager),
+            onClick = onOpenCities
+        )
+        Row(
             modifier = Modifier
                 .weight(1f)
-                .padding(end = 12.dp)
+                .padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
+            Icon(
+                imageVector = Icons.Default.LocationOn,
+                contentDescription = null,
+                tint = GlassOnSurface,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
             Text(
                 text = cityName,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = Color(0xFFF9FCF8)
-            )
-            Text(
-                text = "Open-Meteo 实时天气",
-                style = MaterialTheme.typography.labelLarge,
-                color = Color(0xDDEBF7EF)
+                style = MaterialTheme.typography.titleLarge,
+                color = GlassOnSurface
             )
         }
-        IconButton(onClick = onOpenCities) {
-            Icon(Icons.Default.Menu, contentDescription = "城市管理", tint = Color(0xFFF9FCF8))
-        }
-        IconButton(onClick = onOpenSettings) {
-            Icon(Icons.Default.Settings, contentDescription = "设置", tint = Color(0xFFF9FCF8))
-        }
+        GlassIconButton(
+            icon = Icons.Default.Settings,
+            contentDescription = stringResource(R.string.settings),
+            onClick = onOpenSettings
+        )
     }
 }
 
@@ -215,51 +258,94 @@ private fun CurrentWeatherHero(
     errorMessage: String?,
     isLoading: Boolean
 ) {
+    val weatherText = weatherTextForCode(current.weatherCode)
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 18.dp, bottom = 12.dp),
-        horizontalAlignment = Alignment.Start
+            .padding(top = 8.dp, bottom = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Icon(
+            imageVector = current.icon.toVector(current.isDay),
+            contentDescription = weatherText,
+            tint = GlassOnSurface,
+            modifier = Modifier.size(80.dp)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = UnitConverter.formatTemperature(current.temperature, settings.temperatureUnit),
             style = MaterialTheme.typography.displayLarge,
-            fontWeight = FontWeight.Light,
-            color = Color(0xFFF9FCF8)
+            color = GlassOnSurface
         )
         Text(
-            text = "${weatherGlyph(current.icon)} ${current.weatherText}",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.SemiBold,
-            color = Color(0xFFF9FCF8)
+            text = weatherText,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Medium,
+            color = GlassOnSurface
         )
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "最高 ${UnitConverter.formatTemperature(current.highTemperature, settings.temperatureUnit)} / " +
-                "最低 ${UnitConverter.formatTemperature(current.lowTemperature, settings.temperatureUnit)} · " +
-                "体感 ${UnitConverter.formatTemperature(current.apparentTemperature, settings.temperatureUnit)}",
+            text = stringResource(
+                R.string.high_low_format,
+                UnitConverter.formatTemperature(current.highTemperature, settings.temperatureUnit),
+                UnitConverter.formatTemperature(current.lowTemperature, settings.temperatureUnit)
+            ),
             style = MaterialTheme.typography.bodyLarge,
-            color = Color(0xEAF9FCF8)
+            color = GlassOnSurfaceMuted
+        )
+        Text(
+            text = stringResource(
+                R.string.apparent_temperature_format,
+                UnitConverter.formatTemperature(current.apparentTemperature, settings.temperatureUnit)
+            ),
+            style = MaterialTheme.typography.bodyMedium,
+            color = GlassOnSurfaceMuted
         )
         if (isLoading) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(18.dp),
+                    modifier = Modifier.size(16.dp),
                     strokeWidth = 2.dp,
-                    color = Color(0xFFF9FCF8)
+                    color = GlassOnSurface
                 )
                 Spacer(modifier = Modifier.width(10.dp))
-                Text(text = "正在更新", color = Color(0xEAF9FCF8))
+                Text(
+                    text = stringResource(R.string.updating),
+                    color = GlassOnSurfaceMuted,
+                    style = MaterialTheme.typography.labelLarge
+                )
             }
         }
         if (errorMessage != null) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = onRetry) {
-                Text(text = "更新失败，重试")
+            Spacer(modifier = Modifier.height(14.dp))
+            Button(
+                onClick = onRetry,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White.copy(alpha = 0.18f),
+                    contentColor = GlassOnSurface
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(text = stringResource(R.string.update_failed_retry))
             }
         }
     }
+}
+
+@Composable
+private fun GlassSectionHeader(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.labelLarge,
+        color = GlassOnSurfaceMuted,
+        modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
+    )
 }
 
 @Composable
@@ -268,40 +354,18 @@ private fun HourlyForecastSection(
     settings: WeatherSettings,
     currentTime: String
 ) {
-    WeatherSectionCard(title = "小时天气") {
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            items(hourly) { item ->
-                val isCurrent = item.time == currentTime
-                Column(
-                    modifier = Modifier
-                        .width(72.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(
-                            if (isCurrent) MaterialTheme.colorScheme.primaryContainer
-                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.42f)
-                        )
-                        .padding(vertical = 12.dp, horizontal = 8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = if (isCurrent) "现在" else formatHour(item.time),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        modifier = Modifier.padding(vertical = 8.dp),
-                        text = weatherGlyph(item.icon),
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                    Text(
-                        text = UnitConverter.formatTemperature(item.temperature, settings.temperatureUnit),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = "${item.precipitationProbability ?: 0}%",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+    Column {
+        GlassSectionHeader(title = stringResource(R.string.next_24_hours))
+        GlassCard(contentPadding = PaddingValues(vertical = 14.dp, horizontal = 6.dp)) {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                contentPadding = PaddingValues(horizontal = 6.dp)
+            ) {
+                items(hourly) { item ->
+                    HourCell(
+                        item = item,
+                        settings = settings,
+                        isCurrent = item.time == currentTime
                     )
                 }
             }
@@ -310,46 +374,183 @@ private fun HourlyForecastSection(
 }
 
 @Composable
+private fun HourCell(
+    item: HourlyForecast,
+    settings: WeatherSettings,
+    isCurrent: Boolean
+) {
+    val highlight = isCurrent
+    Column(
+        modifier = Modifier
+            .width(64.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(
+                if (highlight) Color.White.copy(alpha = 0.22f) else Color.Transparent
+            )
+            .padding(vertical = 12.dp, horizontal = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = if (highlight) stringResource(R.string.now) else formatHour(item.time),
+            style = MaterialTheme.typography.labelMedium,
+            color = if (highlight) GlassOnSurface else GlassOnSurfaceMuted
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Icon(
+            imageVector = item.icon.toVector(item.isDay),
+            contentDescription = null,
+            tint = GlassOnSurface,
+            modifier = Modifier.size(26.dp)
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        val precip = item.precipitationProbability ?: 0
+        Text(
+            text = if (precip > 0) "$precip%" else " ",
+            style = MaterialTheme.typography.labelSmall,
+            color = Color(0xFFA5D8FF)
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = UnitConverter.formatTemperature(item.temperature, settings.temperatureUnit),
+            style = MaterialTheme.typography.titleMedium,
+            color = GlassOnSurface
+        )
+    }
+}
+
+@Composable
 private fun DailyForecastSection(
     daily: List<DailyForecast>,
     settings: WeatherSettings
 ) {
-    WeatherSectionCard(title = "未来 10 天") {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            daily.forEach { item ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 9.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        modifier = Modifier.weight(1.1f),
-                        text = formatDay(item.date),
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        modifier = Modifier.weight(0.7f),
-                        text = weatherGlyph(item.icon),
-                        style = MaterialTheme.typography.titleMedium,
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        modifier = Modifier.weight(1.2f),
-                        text = "${item.precipitationProbabilityMax ?: 0}%",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        modifier = Modifier.weight(1.7f),
-                        text = "${UnitConverter.formatTemperature(item.highTemperature, settings.temperatureUnit)} / " +
-                            UnitConverter.formatTemperature(item.lowTemperature, settings.temperatureUnit),
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.End
+    val highs = daily.mapNotNull { it.highTemperature }
+    val lows = daily.mapNotNull { it.lowTemperature }
+    val rangeMax = highs.maxOrNull()
+    val rangeMin = lows.minOrNull()
+
+    Column {
+        GlassSectionHeader(title = stringResource(R.string.future_days_format, daily.size))
+        GlassCard(contentPadding = PaddingValues(horizontal = 18.dp, vertical = 6.dp)) {
+            daily.forEachIndexed { index, item ->
+                DailyForecastRow(
+                    item = item,
+                    settings = settings,
+                    rangeMin = rangeMin,
+                    rangeMax = rangeMax
+                )
+                if (index != daily.lastIndex) {
+                    Spacer(
+                        modifier = Modifier
+                            .padding(start = 4.dp, end = 4.dp)
+                            .fillMaxWidth()
+                            .height(1.dp)
+                            .background(Color.White.copy(alpha = 0.12f))
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DailyForecastRow(
+    item: DailyForecast,
+    settings: WeatherSettings,
+    rangeMin: Double?,
+    rangeMax: Double?
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            modifier = Modifier.weight(1.1f),
+            text = formatDayText(item.date),
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Medium,
+            color = GlassOnSurface
+        )
+        Icon(
+            imageVector = item.icon.toVector(true),
+            contentDescription = null,
+            tint = GlassOnSurface,
+            modifier = Modifier
+                .weight(0.7f)
+                .size(22.dp)
+        )
+        val precip = item.precipitationProbabilityMax ?: 0
+        Text(
+            modifier = Modifier.weight(0.9f),
+            text = if (precip > 0) "$precip%" else "—",
+            style = MaterialTheme.typography.bodyMedium,
+            color = if (precip > 0) Color(0xFFA5D8FF) else GlassOnSurfaceFaint,
+            textAlign = TextAlign.Center
+        )
+        Text(
+            text = UnitConverter.formatTemperature(item.lowTemperature, settings.temperatureUnit),
+            style = MaterialTheme.typography.bodyMedium,
+            color = GlassOnSurfaceMuted,
+            textAlign = TextAlign.End,
+            modifier = Modifier.width(46.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        TemperatureRangeBar(
+            modifier = Modifier
+                .weight(1.4f)
+                .height(6.dp),
+            globalMin = rangeMin,
+            globalMax = rangeMax,
+            dayLow = item.lowTemperature,
+            dayHigh = item.highTemperature
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = UnitConverter.formatTemperature(item.highTemperature, settings.temperatureUnit),
+            style = MaterialTheme.typography.bodyMedium,
+            color = GlassOnSurface,
+            textAlign = TextAlign.Start,
+            modifier = Modifier.width(46.dp)
+        )
+    }
+}
+
+@Composable
+private fun TemperatureRangeBar(
+    modifier: Modifier,
+    globalMin: Double?,
+    globalMax: Double?,
+    dayLow: Double?,
+    dayHigh: Double?
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(50))
+            .background(Color.White.copy(alpha = 0.15f))
+    ) {
+        if (globalMin != null && globalMax != null && dayLow != null && dayHigh != null &&
+            globalMax > globalMin
+        ) {
+            val span = (globalMax - globalMin).coerceAtLeast(0.001)
+            val startFraction = ((dayLow - globalMin) / span).toFloat().coerceIn(0f, 1f)
+            val endFraction = ((dayHigh - globalMin) / span).toFloat().coerceIn(0f, 1f)
+            val widthFraction = (endFraction - startFraction).coerceAtLeast(0.04f)
+            Row(modifier = Modifier.fillMaxSize()) {
+                Spacer(modifier = Modifier.weight(startFraction.coerceAtLeast(0.0001f)))
+                Box(
+                    modifier = Modifier
+                        .weight(widthFraction)
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(50))
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Color(0xFF8FC8E8), Color(0xFFFFD479), Color(0xFFFF9D7C))
+                            )
+                        )
+                )
+                val trailing = (1f - endFraction).coerceAtLeast(0.0001f)
+                Spacer(modifier = Modifier.weight(trailing))
             }
         }
     }
@@ -361,23 +562,61 @@ private fun MetricsSection(
     settings: WeatherSettings
 ) {
     val metrics = listOf(
-        "湿度" to "${current.relativeHumidity ?: 0}%",
-        "风速 / 风向" to "${UnitConverter.formatWindSpeed(current.windSpeed, settings.windSpeedUnit)}\n${WindDirectionFormatter.format(current.windDirectionDegrees)}",
-        "气压" to UnitConverter.formatPressure(current.pressureHpa, settings.pressureUnit),
-        "能见度" to UnitConverter.formatVisibility(current.visibilityMeters, settings.visibilityUnit),
-        "紫外线指数" to (current.uvIndex?.let { "%.1f".format(it) } ?: "--"),
-        "降水概率" to "${current.precipitationProbability ?: 0}%",
-        "日出 / 日落" to "${formatClock(current.sunrise)}\n${formatClock(current.sunset)}"
+        MetricItem(
+            icon = MetricIcons.Humidity,
+            label = stringResource(R.string.humidity),
+            value = "${current.relativeHumidity ?: 0}%"
+        ),
+        MetricItem(
+            icon = MetricIcons.Wind,
+            label = stringResource(R.string.wind_speed_direction),
+            value = UnitConverter.formatWindSpeed(current.windSpeed, settings.windSpeedUnit),
+            secondary = windDirectionText(current.windDirectionDegrees)
+        ),
+        MetricItem(
+            icon = MetricIcons.Pressure,
+            label = stringResource(R.string.pressure),
+            value = UnitConverter.formatPressure(current.pressureHpa, settings.pressureUnit)
+        ),
+        MetricItem(
+            icon = MetricIcons.Visibility,
+            label = stringResource(R.string.visibility),
+            value = UnitConverter.formatVisibility(current.visibilityMeters, settings.visibilityUnit)
+        ),
+        MetricItem(
+            icon = MetricIcons.Uv,
+            label = stringResource(R.string.uv_index),
+            value = current.uvIndex?.let { "%.1f".format(it) } ?: "--"
+        ),
+        MetricItem(
+            icon = MetricIcons.Precipitation,
+            label = stringResource(R.string.precipitation_probability),
+            value = "${current.precipitationProbability ?: 0}%"
+        ),
+        MetricItem(
+            icon = MetricIcons.SunCycle,
+            label = stringResource(R.string.sunrise_sunset),
+            value = formatClock(current.sunrise),
+            secondary = formatClock(current.sunset)
+        )
     )
-    WeatherSectionCard(title = "天气指标") {
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+
+    Column {
+        GlassSectionHeader(title = stringResource(R.string.weather_metrics))
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             metrics.chunked(2).forEach { row ->
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    row.forEach { (label, value) ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Max),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    row.forEach { metric ->
                         MetricTile(
-                            modifier = Modifier.weight(1f),
-                            label = label,
-                            value = value
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight(),
+                            metric = metric
                         )
                     }
                     if (row.size == 1) {
@@ -389,54 +628,49 @@ private fun MetricsSection(
     }
 }
 
+private data class MetricItem(
+    val icon: ImageVector,
+    val label: String,
+    val value: String,
+    val secondary: String? = null
+)
+
 @Composable
 private fun MetricTile(
     modifier: Modifier,
-    label: String,
-    value: String
+    metric: MetricItem
 ) {
-    Column(
-        modifier = modifier
-            .height(96.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-            .padding(12.dp),
-        verticalArrangement = Arrangement.SpaceBetween
+    GlassCard(
+        modifier = modifier,
+        cornerRadius = 22.dp,
+        contentPadding = PaddingValues(14.dp)
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-    }
-}
-
-@Composable
-private fun WeatherSectionCard(
-    title: String,
-    content: @Composable () -> Unit
-) {
-    Card(
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f)
-        )
-    ) {
-        Column(modifier = Modifier.padding(14.dp)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = metric.icon,
+                contentDescription = null,
+                tint = GlassOnSurfaceMuted,
+                modifier = Modifier.size(16.dp)
             )
-            Spacer(modifier = Modifier.height(12.dp))
-            content()
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = metric.label,
+                style = MaterialTheme.typography.labelMedium,
+                color = GlassOnSurfaceMuted
+            )
+        }
+        Spacer(modifier = Modifier.height(10.dp))
+        Text(
+            text = metric.value,
+            style = MaterialTheme.typography.headlineSmall,
+            color = GlassOnSurface
+        )
+        if (metric.secondary != null) {
+            Text(
+                text = metric.secondary,
+                style = MaterialTheme.typography.bodyMedium,
+                color = GlassOnSurfaceMuted
+            )
         }
     }
 }
@@ -452,20 +686,31 @@ private fun LoadingWeatherState(message: String?, onRetry: () -> Unit) {
         verticalArrangement = Arrangement.Center
     ) {
         if (message == null) {
-            CircularProgressIndicator(color = Color(0xFFF9FCF8))
+            CircularProgressIndicator(color = GlassOnSurface)
         }
         Text(
             modifier = Modifier.padding(top = if (message == null) 16.dp else 0.dp),
-            text = message ?: "正在加载天气",
-            color = Color(0xFFF9FCF8),
-            style = MaterialTheme.typography.bodyLarge
+            text = message ?: stringResource(R.string.loading_weather),
+            color = GlassOnSurface,
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center
         )
         if (message != null) {
             Button(
                 modifier = Modifier.padding(top = 16.dp),
-                onClick = onRetry
+                onClick = onRetry,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White.copy(alpha = 0.18f),
+                    contentColor = GlassOnSurface
+                )
             ) {
-                Text(text = "重试")
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(text = stringResource(R.string.retry))
             }
         }
     }
@@ -477,64 +722,46 @@ private fun EmptyWeatherState(onAddCity: () -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .systemBarsPadding()
-            .padding(24.dp),
+            .padding(28.dp),
         verticalArrangement = Arrangement.Center
     ) {
         Box(
             modifier = Modifier
-                .size(46.dp)
+                .size(64.dp)
                 .clip(CircleShape)
-                .background(Color(0x33F9FCF8))
-        )
+                .background(Color.White.copy(alpha = 0.18f))
+                .border(1.dp, Color.White.copy(alpha = 0.28f), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.LocationOn,
+                contentDescription = null,
+                tint = GlassOnSurface,
+                modifier = Modifier.size(28.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(20.dp))
         Text(
-            modifier = Modifier.padding(top = 18.dp),
-            text = "还没有城市",
+            text = stringResource(R.string.no_city),
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = Color(0xFFF9FCF8)
+            color = GlassOnSurface
         )
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
-            modifier = Modifier.padding(top = 8.dp, bottom = 20.dp),
-            text = "添加城市后即可查看实时天气、小时预报和未来 10 天天气。",
+            text = stringResource(R.string.empty_weather_hint),
             style = MaterialTheme.typography.bodyLarge,
-            color = Color(0xEAF9FCF8)
+            color = GlassOnSurfaceMuted
         )
-        Button(onClick = onAddCity) {
-            Text(text = "搜索城市")
+        Spacer(modifier = Modifier.height(20.dp))
+        Button(
+            onClick = onAddCity,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.White.copy(alpha = 0.20f),
+                contentColor = GlassOnSurface
+            )
+        ) {
+            Text(text = stringResource(R.string.search_city))
         }
-    }
-}
-
-private fun weatherColors(current: CurrentWeather?): List<Color> {
-    val icon = current?.icon
-    val isDay = current?.isDay ?: true
-    return when {
-        !isDay -> listOf(Color(0xFF172032), Color(0xFF263241), Color(0xFF101513))
-        icon == WeatherIcon.Rain || icon == WeatherIcon.Shower -> {
-            listOf(Color(0xFF526879), Color(0xFF73828B), Color(0xFFF0F4F1))
-        }
-        icon == WeatherIcon.Snow -> listOf(Color(0xFF8097A3), Color(0xFFD8E4E7), Color(0xFFF5F7F4))
-        icon == WeatherIcon.Thunderstorm -> listOf(Color(0xFF363645), Color(0xFF62606D), Color(0xFFECEAE7))
-        icon == WeatherIcon.Cloudy || icon == WeatherIcon.Fog -> {
-            listOf(Color(0xFF64737A), Color(0xFF9AA5A6), Color(0xFFF3F5F1))
-        }
-        else -> listOf(Color(0xFF1D6F8F), Color(0xFF77A8B4), Color(0xFFF4F7F4))
-    }
-}
-
-private fun weatherGlyph(icon: WeatherIcon): String {
-    return when (icon) {
-        WeatherIcon.Clear -> "晴"
-        WeatherIcon.PartlyCloudy -> "云"
-        WeatherIcon.Cloudy -> "阴"
-        WeatherIcon.Fog -> "雾"
-        WeatherIcon.Drizzle -> "霧雨"
-        WeatherIcon.Rain -> "雨"
-        WeatherIcon.FreezingRain -> "冻雨"
-        WeatherIcon.Snow -> "雪"
-        WeatherIcon.Shower -> "阵雨"
-        WeatherIcon.Thunderstorm -> "雷"
-        WeatherIcon.Unknown -> "--"
     }
 }
 
@@ -546,8 +773,54 @@ private fun formatClock(value: String?): String {
     return value?.substringAfter('T', value)?.take(5)?.ifBlank { "--" } ?: "--"
 }
 
-private fun formatDay(value: String): String {
+@Composable
+private fun formatDayText(value: String): String {
     return value.substringAfterLast('-').let { day ->
-        if (day.length == 2) "${day}日" else value
+        if (day.length == 2) stringResource(R.string.day_of_month_format, day) else value
     }
+}
+
+@Composable
+private fun windDirectionText(degrees: Int?): String {
+    if (degrees == null) return "--"
+    val normalized = ((degrees % 360) + 360) % 360
+    return when (((normalized + 22.5) / 45.0).toInt() % 8) {
+        0 -> stringResource(R.string.wind_direction_n)
+        1 -> stringResource(R.string.wind_direction_ne)
+        2 -> stringResource(R.string.wind_direction_e)
+        3 -> stringResource(R.string.wind_direction_se)
+        4 -> stringResource(R.string.wind_direction_s)
+        5 -> stringResource(R.string.wind_direction_sw)
+        6 -> stringResource(R.string.wind_direction_w)
+        else -> stringResource(R.string.wind_direction_nw)
+    }
+}
+
+@Composable
+internal fun weatherTextForCode(code: Int): String = when (code) {
+    0 -> stringResource(R.string.weather_clear)
+    1 -> stringResource(R.string.weather_mainly_clear)
+    2 -> stringResource(R.string.weather_partly_cloudy)
+    3 -> stringResource(R.string.weather_overcast)
+    45, 48 -> stringResource(R.string.weather_fog)
+    51 -> stringResource(R.string.weather_light_drizzle)
+    53 -> stringResource(R.string.weather_drizzle)
+    55 -> stringResource(R.string.weather_heavy_drizzle)
+    56, 57 -> stringResource(R.string.weather_freezing_drizzle)
+    61 -> stringResource(R.string.weather_light_rain)
+    63 -> stringResource(R.string.weather_moderate_rain)
+    65 -> stringResource(R.string.weather_heavy_rain)
+    66, 67 -> stringResource(R.string.weather_freezing_rain)
+    71 -> stringResource(R.string.weather_light_snow)
+    73 -> stringResource(R.string.weather_moderate_snow)
+    75 -> stringResource(R.string.weather_heavy_snow)
+    77 -> stringResource(R.string.weather_snow_grains)
+    80 -> stringResource(R.string.weather_light_showers)
+    81 -> stringResource(R.string.weather_showers)
+    82 -> stringResource(R.string.weather_heavy_showers)
+    85 -> stringResource(R.string.weather_light_snow_showers)
+    86 -> stringResource(R.string.weather_heavy_snow_showers)
+    95 -> stringResource(R.string.weather_thunderstorm)
+    96, 99 -> stringResource(R.string.weather_thunderstorm_hail)
+    else -> stringResource(R.string.weather_unknown)
 }

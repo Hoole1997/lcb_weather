@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.lcb.app.weather.data.local.SettingsStore
+import com.example.lcb.app.weather.domain.model.LanguageOption
 import com.example.lcb.app.weather.domain.model.PressureUnit
 import com.example.lcb.app.weather.domain.model.TemperatureUnit
-import com.example.lcb.app.weather.domain.model.ThemeMode
 import com.example.lcb.app.weather.domain.model.VisibilityUnit
 import com.example.lcb.app.weather.domain.model.WeatherSettings
 import com.example.lcb.app.weather.domain.model.WindSpeedUnit
@@ -40,8 +40,8 @@ class SettingsViewModel(
         settingsStore.setVisibilityUnit(value)
     }
 
-    fun setThemeMode(value: ThemeMode) = launch {
-        settingsStore.setThemeMode(value)
+    fun setLanguageOption(value: LanguageOption) = launch {
+        settingsStore.setLanguageOption(value)
     }
 
     private fun launch(block: suspend () -> Unit) {

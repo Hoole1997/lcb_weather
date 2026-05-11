@@ -1,8 +1,10 @@
 package com.example.lcb.app.weather.ui.addcity
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.lcb.app.R
 import com.example.lcb.app.weather.data.local.CityStore
 import com.example.lcb.app.weather.data.repository.GeocodingRepository
 import com.example.lcb.app.weather.domain.model.CitySearchResult
@@ -19,6 +21,7 @@ data class AddCityUiState(
     val results: List<CitySearchItemUiState> = emptyList(),
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
+    @param:StringRes val errorMessageRes: Int? = null,
     val hasSearched: Boolean = false
 )
 
@@ -38,7 +41,7 @@ class AddCityViewModel(
 
     fun onQueryChange(value: String) {
         _uiState.update {
-            it.copy(query = value, errorMessage = null)
+            it.copy(query = value, errorMessage = null, errorMessageRes = null)
         }
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
@@ -73,6 +76,7 @@ class AddCityViewModel(
                     results = emptyList(),
                     isLoading = false,
                     errorMessage = null,
+                    errorMessageRes = null,
                     hasSearched = false
                 )
             }
@@ -80,7 +84,7 @@ class AddCityViewModel(
         }
 
         _uiState.update {
-            it.copy(isLoading = true, errorMessage = null, hasSearched = true)
+            it.copy(isLoading = true, errorMessage = null, errorMessageRes = null, hasSearched = true)
         }
 
         val existingCities = cityStore.cities.first()
@@ -96,6 +100,7 @@ class AddCityViewModel(
                         },
                         isLoading = false,
                         errorMessage = null,
+                        errorMessageRes = null,
                         hasSearched = true
                     )
                 }
@@ -105,7 +110,8 @@ class AddCityViewModel(
                     it.copy(
                         results = emptyList(),
                         isLoading = false,
-                        errorMessage = error.message ?: "城市搜索失败",
+                        errorMessage = error.message,
+                        errorMessageRes = if (error.message == null) R.string.city_search_failed else null,
                         hasSearched = true
                     )
                 }

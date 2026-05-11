@@ -3,20 +3,22 @@ package com.example.lcb.app.weather.ui
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,32 +27,35 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
+import androidx.compose.ui.res.stringResource
+import com.example.lcb.app.R
 import com.example.lcb.app.LcbApp
-import com.example.lcb.app.weather.domain.model.ThemeMode
 import com.example.lcb.app.weather.domain.model.WeatherSettings
 import com.example.lcb.app.weather.ui.navigation.WeatherNavGraph
 import com.example.lcb.app.weather.ui.startup.StartupUiState
 import com.example.lcb.app.weather.ui.startup.StartupViewModel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.WbSunny
+import com.example.lcb.app.weather.ui.theme.GlassOnSurface
+import com.example.lcb.app.weather.ui.theme.GlassOnSurfaceMuted
+import com.example.lcb.app.weather.ui.theme.SkyPalette
+import com.example.lcb.app.weather.ui.theme.StaticSkyBackground
 import com.example.lcb.app.weather.ui.theme.WeatherTheme
 
 @Composable
 fun WeatherApp() {
     val context = LocalContext.current
     val container = (context.applicationContext as LcbApp).weatherContainer
-    val settings by container.settingsStore.settings.collectAsState(initial = WeatherSettings())
-    val systemDarkTheme = isSystemInDarkTheme()
-    val darkTheme = when (settings.themeMode) {
-        ThemeMode.System -> systemDarkTheme
-        ThemeMode.Light -> false
-        ThemeMode.Dark -> true
-    }
+    val settings by container.settingsStore.settings.collectAsState(initial = null)
+    val darkTheme = isSystemInDarkTheme()
     val startupViewModel: StartupViewModel = viewModel(
         factory = StartupViewModel.Factory(
             cityStore = container.cityStore,
@@ -76,6 +81,16 @@ fun WeatherApp() {
         }
     }
 
+    LaunchedEffect(settings?.languageOption) {
+        val loadedSettings = settings ?: return@LaunchedEffect
+        val localeList = loadedSettings.languageOption.localeTag
+            ?.let(LocaleListCompat::forLanguageTags)
+            ?: LocaleListCompat.getEmptyLocaleList()
+        if (AppCompatDelegate.getApplicationLocales() != localeList) {
+            AppCompatDelegate.setApplicationLocales(localeList)
+        }
+    }
+
     WeatherTheme(darkTheme = darkTheme) {
         Surface(
             modifier = Modifier.fillMaxSize(),
@@ -83,7 +98,9 @@ fun WeatherApp() {
         ) {
             val canOpenApp = !startupState.isLoading &&
                 (startupState.activeCityId != null ||
-                    (startupState.needsCitySelection && startupState.errorMessage == null))
+                    (startupState.needsCitySelection &&
+                        startupState.errorMessage == null &&
+                        startupState.errorMessageRes == null))
             if (canOpenApp) {
                 WeatherNavGraph(
                     startCityId = startupState.activeCityId,
@@ -100,65 +117,86 @@ fun WeatherApp() {
     }
 }
 
+private val StartupSky = SkyPalette(
+    gradient = listOf(Color(0xFF0F1A2C), Color(0xFF1F3F60), Color(0xFF3F76A8)),
+    glow = Color(0x55FFE9B0),
+    glowX = 260f,
+    glowY = 200f,
+    glowRadius = 700f
+)
+
 @Composable
 private fun StartupScreen(
     state: StartupUiState = StartupUiState(),
     onRetryLocation: () -> Unit = {},
     onChooseCity: () -> Unit = {}
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primaryContainer,
-                        MaterialTheme.colorScheme.background
-                    )
-                )
-            )
-            .systemBarsPadding()
-            .padding(horizontal = 24.dp),
-        contentAlignment = Alignment.Center
-    ) {
+    StaticSkyBackground(palette = StartupSky) {
         Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.Center
+            modifier = Modifier
+                .fillMaxSize()
+                .systemBarsPadding()
+                .padding(horizontal = 28.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.Start
         ) {
+            Icon(
+                imageVector = Icons.Filled.WbSunny,
+                contentDescription = null,
+                tint = GlassOnSurface,
+                modifier = Modifier.size(60.dp)
+            )
+            Spacer(modifier = Modifier.height(20.dp))
             Text(
-                text = "天气",
+                text = stringResource(R.string.app_name),
                 style = MaterialTheme.typography.displayMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                fontWeight = FontWeight.SemiBold
+                color = GlassOnSurface
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = "Compose 基础已接入。接下来会逐步连接定位、城市和 Open-Meteo 天气数据。",
+                text = stringResource(R.string.startup_tagline),
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                color = GlassOnSurfaceMuted,
                 textAlign = TextAlign.Start
             )
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(28.dp))
+            if (state.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(22.dp),
+                    strokeWidth = 2.dp,
+                    color = GlassOnSurface
+                )
+                Spacer(modifier = Modifier.height(14.dp))
+            }
             Text(
                 text = when {
-                    state.activeCityId != null -> "默认城市已准备：${state.activeCityId}"
-                    state.isLoading -> state.message
-                    state.needsCitySelection -> state.errorMessage ?: "请选择城市"
-                    else -> state.message
+                    state.activeCityId != null -> stringResource(
+                        R.string.startup_default_city_ready,
+                        state.activeCityId
+                    )
+                    state.isLoading -> stringResource(state.messageRes)
+                    state.needsCitySelection -> state.errorMessage
+                        ?: state.errorMessageRes?.let { stringResource(it) }
+                        ?: stringResource(R.string.choose_city)
+                    else -> stringResource(state.messageRes)
                 },
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                fontWeight = FontWeight.Medium
+                color = GlassOnSurface
             )
             if (state.needsCitySelection) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = onChooseCity) {
-                    Text(text = "搜索城市")
+                Spacer(modifier = Modifier.height(20.dp))
+                Button(
+                    onClick = onChooseCity,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White.copy(alpha = 0.92f),
+                        contentColor = Color(0xFF14304D)
+                    )
+                ) {
+                    Text(text = stringResource(R.string.search_city))
                 }
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
                 OutlinedButton(onClick = onRetryLocation) {
-                    Text(text = "重试定位")
+                    Text(text = stringResource(R.string.retry_location), color = GlassOnSurface)
                 }
             }
         }

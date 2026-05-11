@@ -8,39 +8,59 @@ data class WeatherSettings(
     val windSpeedUnit: WindSpeedUnit = WindSpeedUnit.KilometersPerHour,
     val pressureUnit: PressureUnit = PressureUnit.Hectopascal,
     val visibilityUnit: VisibilityUnit = VisibilityUnit.Kilometer,
-    val themeMode: ThemeMode = ThemeMode.System
+    val languageOption: LanguageOption = LanguageOption.System
 )
 
 @Serializable
-enum class TemperatureUnit(val apiValue: String, val symbol: String, val label: String) {
-    Celsius("celsius", "°C", "摄氏度"),
-    Fahrenheit("fahrenheit", "°F", "华氏度")
+enum class TemperatureUnit(val apiValue: String, val symbol: String) {
+    Celsius("celsius", "°C"),
+    Fahrenheit("fahrenheit", "°F")
 }
 
 @Serializable
-enum class WindSpeedUnit(val apiValue: String, val symbol: String, val label: String) {
-    KilometersPerHour("kmh", "km/h", "km/h"),
-    MetersPerSecond("ms", "m/s", "m/s"),
-    MilesPerHour("mph", "mph", "mph"),
-    Knots("kn", "节", "节")
+enum class WindSpeedUnit(val apiValue: String, val symbol: String) {
+    KilometersPerHour("kmh", "km/h"),
+    MetersPerSecond("ms", "m/s"),
+    MilesPerHour("mph", "mph"),
+    Knots("kn", "kn")
 }
 
 @Serializable
-enum class PressureUnit(val symbol: String, val label: String) {
-    Hectopascal("hPa", "hPa"),
-    MillimeterMercury("mmHg", "mmHg"),
-    InchMercury("inHg", "inHg")
+enum class PressureUnit(val symbol: String) {
+    Hectopascal("hPa"),
+    MillimeterMercury("mmHg"),
+    InchMercury("inHg")
 }
 
 @Serializable
-enum class VisibilityUnit(val symbol: String, val label: String) {
-    Kilometer("km", "km"),
-    Mile("mile", "mile")
+enum class VisibilityUnit(val symbol: String) {
+    Kilometer("km"),
+    Mile("mile")
 }
 
 @Serializable
-enum class ThemeMode(val label: String) {
-    System("跟随系统"),
-    Light("浅色"),
-    Dark("深色")
+enum class LanguageOption(
+    val localeTag: String?,
+    private val apiLanguage: String?
+) {
+    System(null, null),
+    ChineseSimplified("zh-CN", "zh"),
+    ChineseTraditional("zh-TW", "zh"),
+    English("en", "en"),
+    Japanese("ja", "ja"),
+    Korean("ko", "ko"),
+    French("fr", "fr"),
+    German("de", "de"),
+    Spanish("es", "es"),
+    Portuguese("pt", "pt"),
+    Italian("it", "it"),
+    Russian("ru", "ru");
+
+    fun geocodingLanguage(defaultLanguage: String): String {
+        return apiLanguage ?: defaultLanguage.takeIf { it in SupportedGeocodingLanguages } ?: "en"
+    }
+
+    private companion object {
+        val SupportedGeocodingLanguages = setOf("zh", "en", "ja", "ko", "fr", "de", "es", "pt", "it", "ru")
+    }
 }

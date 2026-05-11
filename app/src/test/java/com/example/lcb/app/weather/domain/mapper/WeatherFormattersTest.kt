@@ -9,14 +9,6 @@ import org.junit.Test
 
 class WeatherFormattersTest {
     @Test
-    fun `formats wind direction from degrees`() {
-        assertEquals("北风", WindDirectionFormatter.format(0))
-        assertEquals("东风", WindDirectionFormatter.format(90))
-        assertEquals("西北风", WindDirectionFormatter.format(315))
-        assertEquals("--", WindDirectionFormatter.format(null))
-    }
-
-    @Test
     fun `formats weather units`() {
         assertEquals("23°C", UnitConverter.formatTemperature(22.6, TemperatureUnit.Celsius))
         assertEquals("9.4 km/h", UnitConverter.formatWindSpeed(9.36, WindSpeedUnit.KilometersPerHour))

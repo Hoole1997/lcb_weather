@@ -1,8 +1,10 @@
 package com.example.lcb.app.weather.ui.main
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.lcb.app.R
 import com.example.lcb.app.weather.data.local.CityStore
 import com.example.lcb.app.weather.data.local.SettingsStore
 import com.example.lcb.app.weather.data.repository.WeatherRepository
@@ -22,7 +24,9 @@ data class MainWeatherUiState(
     val settings: WeatherSettings = WeatherSettings(),
     val report: WeatherReport? = null,
     val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
     val errorMessage: String? = null,
+    @param:StringRes val errorMessageRes: Int? = null,
     val hasNoCity: Boolean = false
 )
 
@@ -53,7 +57,7 @@ class MainWeatherViewModel(
                 _uiState.value = MainWeatherUiState(
                     isLoading = false,
                     hasNoCity = true,
-                    errorMessage = "还没有添加城市"
+                    errorMessageRes = R.string.no_city
                 )
                 return@launch
             }
@@ -73,6 +77,36 @@ class MainWeatherViewModel(
         }
     }
 
+    fun refresh() {
+        val state = _uiState.value
+        val city = state.city ?: return
+        if (state.isRefreshing) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isRefreshing = true, errorMessage = null, errorMessageRes = null) }
+            weatherRepository.getWeather(city, state.settings)
+                .onSuccess { report ->
+                    _uiState.update {
+                        it.copy(
+                            report = report,
+                            isLoading = false,
+                            isRefreshing = false,
+                            errorMessage = null,
+                            errorMessageRes = null
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isRefreshing = false,
+                            errorMessage = error.message,
+                            errorMessageRes = if (error.message == null) R.string.weather_load_failed else null
+                        )
+                    }
+                }
+        }
+    }
+
     private suspend fun fetch(city: SavedCity, settings: WeatherSettings) {
         _uiState.update {
             it.copy(
@@ -80,6 +114,7 @@ class MainWeatherViewModel(
                 settings = settings,
                 isLoading = true,
                 errorMessage = null,
+                errorMessageRes = null,
                 hasNoCity = false
             )
         }
@@ -99,7 +134,8 @@ class MainWeatherViewModel(
                         city = city,
                         settings = settings,
                         isLoading = false,
-                        errorMessage = error.message ?: "天气数据加载失败"
+                        errorMessage = error.message,
+                        errorMessageRes = if (error.message == null) R.string.weather_load_failed else null
                     )
                 }
             }

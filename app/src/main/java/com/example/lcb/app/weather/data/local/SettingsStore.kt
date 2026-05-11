@@ -4,9 +4,9 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.example.lcb.app.weather.domain.model.LanguageOption
 import com.example.lcb.app.weather.domain.model.PressureUnit
 import com.example.lcb.app.weather.domain.model.TemperatureUnit
-import com.example.lcb.app.weather.domain.model.ThemeMode
 import com.example.lcb.app.weather.domain.model.VisibilityUnit
 import com.example.lcb.app.weather.domain.model.WeatherSettings
 import com.example.lcb.app.weather.domain.model.WindSpeedUnit
@@ -22,7 +22,7 @@ class SettingsStore(
             windSpeedUnit = enumValue(preferences[Keys.WindSpeedUnit], WindSpeedUnit.KilometersPerHour),
             pressureUnit = enumValue(preferences[Keys.PressureUnit], PressureUnit.Hectopascal),
             visibilityUnit = enumValue(preferences[Keys.VisibilityUnit], VisibilityUnit.Kilometer),
-            themeMode = enumValue(preferences[Keys.ThemeMode], ThemeMode.System)
+            languageOption = enumValue(preferences[Keys.LanguageOption], LanguageOption.System)
         )
     }
 
@@ -42,8 +42,8 @@ class SettingsStore(
         set(Keys.VisibilityUnit, value.name)
     }
 
-    suspend fun setThemeMode(value: ThemeMode) {
-        set(Keys.ThemeMode, value.name)
+    suspend fun setLanguageOption(value: LanguageOption) {
+        set(Keys.LanguageOption, value.name)
     }
 
     private suspend fun set(key: Preferences.Key<String>, value: String) {
@@ -62,6 +62,6 @@ class SettingsStore(
         val WindSpeedUnit = stringPreferencesKey("wind_speed_unit")
         val PressureUnit = stringPreferencesKey("pressure_unit")
         val VisibilityUnit = stringPreferencesKey("visibility_unit")
-        val ThemeMode = stringPreferencesKey("theme_mode")
+        val LanguageOption = stringPreferencesKey("language_option")
     }
 }

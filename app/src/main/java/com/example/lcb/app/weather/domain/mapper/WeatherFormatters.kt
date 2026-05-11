@@ -8,17 +8,6 @@ import java.math.RoundingMode
 import java.text.DecimalFormat
 import kotlin.math.roundToInt
 
-object WindDirectionFormatter {
-    private val directions = listOf("北风", "东北风", "东风", "东南风", "南风", "西南风", "西风", "西北风")
-
-    fun format(degrees: Int?): String {
-        if (degrees == null) return "--"
-        val normalized = ((degrees % 360) + 360) % 360
-        val index = ((normalized + 22.5) / 45.0).toInt() % directions.size
-        return directions[index]
-    }
-}
-
 object UnitConverter {
     fun formatTemperature(value: Double?, unit: TemperatureUnit): String {
         if (value == null) return "--"

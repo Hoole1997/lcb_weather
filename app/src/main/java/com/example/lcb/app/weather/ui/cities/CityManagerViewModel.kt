@@ -1,8 +1,10 @@
 package com.example.lcb.app.weather.ui.cities
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.lcb.app.R
 import com.example.lcb.app.weather.data.local.CityStore
 import com.example.lcb.app.weather.data.local.SettingsStore
 import com.example.lcb.app.weather.data.repository.WeatherRepository
@@ -38,12 +40,14 @@ data class CityCardUiState(
     val city: SavedCity,
     val summary: CityWeatherSummary? = null,
     val isLoading: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    @param:StringRes val errorMessageRes: Int? = null
 )
 
 data class CityWeatherSummary(
     val temperature: Double,
     val weatherText: String,
+    val weatherCode: Int,
     val icon: WeatherIcon,
     val highTemperature: Double?,
     val lowTemperature: Double?
@@ -62,17 +66,25 @@ class CityManagerViewModel(
             combine(cityStore.cities, settingsStore.settings) { cities, settings ->
                 cities to settings
             }.collect { (cities, settings) ->
-                val oldById = _uiState.value.cards.associateBy { it.city.id }
-                _uiState.update {
-                    it.copy(
-                        settings = settings,
-                        cards = cities.map { city ->
-                            oldById[city.id]?.copy(city = city)
-                                ?: CityCardUiState(city = city, isLoading = true)
-                        }
-                    )
+                val previous = _uiState.value
+                val oldById = previous.cards.associateBy { it.city.id }
+                val newCards = cities.map { city ->
+                    oldById[city.id]?.copy(city = city)
+                        ?: CityCardUiState(city = city, isLoading = true)
                 }
-                refreshSummaries(cities, settings)
+
+                val previousIds = previous.cards.map { it.city.id }
+                val newIds = cities.map { it.id }
+                val sameSet = previousIds.toSet() == newIds.toSet()
+                val settingsChanged = previous.settings != settings
+                val needsRefresh = !sameSet || settingsChanged ||
+                    previous.cards.any { it.summary == null && it.errorMessage == null }
+
+                _uiState.update { it.copy(settings = settings, cards = newCards) }
+
+                if (needsRefresh) {
+                    refreshSummaries(cities, settings)
+                }
             }
         }
     }
@@ -87,14 +99,27 @@ class CityManagerViewModel(
         }
     }
 
+    /**
+     * Called continuously while the user drags an item. Updates the
+     * in-memory order only — we do NOT persist on every pixel, otherwise
+     * the cityStore flow would re-emit mid-drag and cause the list to
+     * shake when ViewModel rebuilds the cards list.
+     */
     fun moveCity(fromIndex: Int, toIndex: Int) {
         val current = _uiState.value.cards.toMutableList()
         if (fromIndex !in current.indices || toIndex !in current.indices) return
         val moved = current.removeAt(fromIndex)
         current.add(toIndex, moved)
         _uiState.update { it.copy(cards = current) }
+    }
+
+    /**
+     * Called once when the drag ends. Persists the current order to disk.
+     */
+    fun commitOrder() {
+        val ids = _uiState.value.cards.map { it.city.id }
         viewModelScope.launch {
-            cityStore.updateSort(current.map { it.city.id })
+            cityStore.updateSort(ids)
         }
     }
 
@@ -122,6 +147,7 @@ class CityManagerViewModel(
                                 summary = CityWeatherSummary(
                                     temperature = report.current.temperature,
                                     weatherText = report.current.weatherText,
+                                    weatherCode = report.current.weatherCode,
                                     icon = report.current.icon,
                                     highTemperature = report.current.highTemperature,
                                     lowTemperature = report.current.lowTemperature
@@ -132,7 +158,12 @@ class CityManagerViewModel(
                             CityCardUiState(
                                 city = city,
                                 isLoading = false,
-                                errorMessage = error.message ?: "加载失败"
+                                errorMessage = error.message,
+                                errorMessageRes = if (error.message == null) {
+                                    R.string.city_weather_load_failed
+                                } else {
+                                    null
+                                }
                             )
                         }
                     )
@@ -141,9 +172,14 @@ class CityManagerViewModel(
         }
 
         _uiState.update { state ->
+            val latestById = state.cards.associateBy { it.city.id }
             state.copy(
                 isRefreshing = false,
-                cards = cities.map { city -> summaries[city.id] ?: CityCardUiState(city = city) }
+                cards = state.cards.map { card ->
+                    summaries[card.city.id]
+                        ?: latestById[card.city.id]
+                        ?: CityCardUiState(city = card.city)
+                }
             )
         }
     }

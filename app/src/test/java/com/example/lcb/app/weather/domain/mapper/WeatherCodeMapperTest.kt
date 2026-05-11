@@ -8,11 +8,11 @@ class WeatherCodeMapperTest {
     @Test
     fun `maps common clear and rain codes`() {
         assertEquals(
-            WeatherCondition(code = 0, text = "晴", icon = WeatherIcon.Clear),
+            WeatherCondition(code = 0, text = "clear", icon = WeatherIcon.Clear),
             WeatherCodeMapper.map(0)
         )
         assertEquals(
-            WeatherCondition(code = 63, text = "中雨", icon = WeatherIcon.Rain),
+            WeatherCondition(code = 63, text = "moderate_rain", icon = WeatherIcon.Rain),
             WeatherCodeMapper.map(63)
         )
     }
@@ -20,7 +20,7 @@ class WeatherCodeMapperTest {
     @Test
     fun `maps unknown code safely`() {
         assertEquals(
-            WeatherCondition(code = -1, text = "未知天气", icon = WeatherIcon.Unknown),
+            WeatherCondition(code = -1, text = "unknown", icon = WeatherIcon.Unknown),
             WeatherCodeMapper.map(-1)
         )
     }

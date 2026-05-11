@@ -44,7 +44,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "LCB_Template"
+rootProject.name = "LCB_Weather"
 include(":app")
 //include(":bill")
 //include(":core")

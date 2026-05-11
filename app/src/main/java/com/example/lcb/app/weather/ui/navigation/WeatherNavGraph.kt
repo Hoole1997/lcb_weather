@@ -1,5 +1,8 @@
 package com.example.lcb.app.weather.ui.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -16,6 +19,13 @@ import com.example.lcb.app.weather.ui.addcity.AddCityRoute
 import com.example.lcb.app.weather.ui.cities.CityManagerRoute
 import com.example.lcb.app.weather.ui.main.MainWeatherRoute
 import com.example.lcb.app.weather.ui.settings.SettingsRoute
+
+private const val NavTransitionMillis = 300
+
+private val NavSpec = tween<androidx.compose.ui.unit.IntOffset>(
+    durationMillis = NavTransitionMillis,
+    easing = FastOutSlowInEasing
+)
 
 @Composable
 fun WeatherNavGraph(
@@ -34,7 +44,35 @@ fun WeatherNavGraph(
     NavHost(
         navController = navController,
         startDestination = startDestination,
-        modifier = modifier
+        modifier = modifier,
+        // forward: new page enters from the trailing (right) edge
+        enterTransition = {
+            slideIntoContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                animationSpec = NavSpec
+            )
+        },
+        // forward: previous page exits towards the leading (left) edge in lock-step
+        exitTransition = {
+            slideOutOfContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                animationSpec = NavSpec
+            )
+        },
+        // back: previous page re-enters from the leading edge
+        popEnterTransition = {
+            slideIntoContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.End,
+                animationSpec = NavSpec
+            )
+        },
+        // back: top page exits towards the trailing edge
+        popExitTransition = {
+            slideOutOfContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.End,
+                animationSpec = NavSpec
+            )
+        }
     ) {
         composable(
             route = WeatherRoute.Main.route,

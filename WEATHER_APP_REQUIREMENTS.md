@@ -362,6 +362,22 @@ sortIndex
 
 ### 其他入口
 
+- [x] ✅ 设置页包含语言切换入口。
+- [x] ✅ 语言支持跟随系统。
+- [x] ✅ 语言支持简体中文。
+- [x] ✅ 语言支持繁體中文。
+- [x] ✅ 语言支持 English。
+- [x] ✅ 语言支持日本語。
+- [x] ✅ 语言支持한국어。
+- [x] ✅ 语言支持 Français。
+- [x] ✅ 语言支持 Deutsch。
+- [x] ✅ 语言支持 Español。
+- [x] ✅ 语言支持 Português。
+- [x] ✅ 语言支持 Italiano。
+- [x] ✅ 语言支持 Русский。
+- [x] ✅ 语言切换后通过 AppCompat 应用级 locale 即时生效。
+- [x] ✅ 城市搜索接口按当前语言传递 Open-Meteo geocoding language。
+- [x] ✅ 城市/搜索结果国家名按当前语言国际化显示。
 - [x] ✅ 设置页包含关于入口。
 - [x] ✅ 设置页包含隐私协议入口。
 
@@ -369,6 +385,8 @@ sortIndex
 
 ```text
 已完成设置页。新增 ui/settings/SettingsViewModel 与 SettingsScreen，并在 WeatherNavGraph 设置路由中替换占位页。设置页使用分组卡片和 AssistChip 即时选择温度、风力、气压、能见度和主题；所有选择直接写入 SettingsStore。WeatherApp 根入口收集 SettingsStore.settings，根据 ThemeMode.System/Light/Dark 传入 WeatherTheme，因此主题切换即时生效。MainWeatherViewModel 和 CityManagerViewModel 已收集 settings Flow，单位变化会刷新天气请求和展示。设置页包含关于与隐私协议入口。验证命令：./gradlew :app:compileLocalDebugKotlin，结果 BUILD SUCCESSFUL。
+2026-05-11 补充语言切换：WeatherSettings 增加 LanguageOption，SettingsStore 持久化 languageOption，SettingsScreen 增加语言行和底部选择弹窗，WeatherApp 根据设置调用 AppCompatDelegate.setApplicationLocales，支持跟随系统/简体中文/English。当前设置页 UI 已被后续玻璃拟态版本覆盖，实际交互使用底部弹窗选择项。
+2026-05-11 扩展语言与国家名国际化：LanguageOption 增加繁中、日、韩、法、德、西、葡、意、俄等主流语言选项，并为 Open-Meteo Geocoding API 映射对应 language 参数。SavedCity 与 CitySearchResult 新增 countryCode 字段，LocationRepository 和 GeocodingRepository 负责保存 ISO 国家码；城市副标题仍通过原有 subtitle 属性读取，属性内部使用 Locale.Builder().setRegion(countryCode).build().getDisplayCountry(Locale.getDefault()) 动态翻译国家名，避免修改页面布局和调用参数，覆盖所有有 ISO country code 的国家，不维护手写国家翻译表。新增 PlaceLocalizationTest 覆盖国家名本地化展示。验证命令：./gradlew :app:compileLocalDebugKotlin :app:testLocalDebugUnitTest，结果 BUILD SUCCESSFUL。
 ```
 
 ## 阶段 11：关于页与隐私协议
@@ -446,11 +464,16 @@ sortIndex
 - [ ] 是否需要桌面小组件。
 - [ ] 是否需要离线缓存天气数据。
 - [ ] 是否需要空气质量数据。
-- [ ] 是否需要多语言。
+- [x] ✅ 是否需要多语言：已加入简体中文/English/跟随系统。
 - [ ] 是否需要广告位与天气页面融合。
 
 变更说明：
 
 ```text
 2026-05-08：确认首次进入默认使用系统定位 API 获取经纬度；定位失败或用户拒绝后，引导用户搜索城市。明确不使用 IP 定位作为首选方案。
+2026-05-11：针对城市管理页长按拖拽抖动进行修正。原因包括 reorderable 回调 index 包含列表 header 导致城市列表索引错位，以及天气摘要刷新完成时可能按持久化顺序重建 cards 覆盖拖拽中的 UI 顺序。修正为拖拽移动时只更新内存顺序，长按整张卡片拖动，松手后一次性持久化，并且摘要刷新完成后保留当前 UI 顺序。
+2026-05-11：设置页新增语言切换，并将天气业务 UI 可见硬编码文案整理到 strings.xml / values-en/strings.xml。启动提示、错误兜底、城市/主天气/添加城市/设置/关于/隐私文案、天气状态、风向和日期格式都改为资源读取；领域层 WeatherCodeMapper 改为返回稳定英文 key，Compose 展示层按 weatherCode 映射到资源，便于后续扩展更多语言。验证命令：./gradlew :app:compileLocalDebugKotlin :app:testLocalDebugUnitTest，结果 BUILD SUCCESSFUL。当前工作树在本次修改前已有未提交 UI 改动，因此本次未自动提交。
+2026-05-11：语言切换扩展到繁中、日、韩、法、德、西、葡、意、俄。地理编码搜索按当前语言请求 Open-Meteo；城市搜索结果和城市管理列表通过 countryCode 动态展示本地化国家名，因此 App 模块内国家名不再依赖接口返回的固定语言文本。历史已保存城市如果没有 countryCode，会继续回退显示旧 country 文本。
+2026-05-11：修复真机运行崩溃 java.lang.IllegalAccessError: SavedCity.Companion inaccessible。原因是 SavedCity 是 @Serializable 数据类，类内 private companion object 在 kotlinx serialization 生成/运行时代码访问路径下触发权限错误。已移除 SavedCity 和 CitySearchResult 内的 private companion 常量，改为局部长度判断，不改变 UI 和存储结构。验证命令：./gradlew :app:compileLocalDebugKotlin :app:testLocalDebugUnitTest，结果 BUILD SUCCESSFUL。
+2026-05-11：修复进入 App 闪屏/闪烁风险。原因不是启动线程做重活，而是 WeatherApp 先用 WeatherSettings() 作为 DataStore 初始值，可能先将 AppCompat locale 重置为跟随系统，随后 DataStore 读到真实语言再 setApplicationLocales，触发 Activity recreate。已将设置收集初始值改为 null，DataStore 未加载完成前不调用 setApplicationLocales；同时在 Manifest 添加 AppCompat AppLocalesMetadataHolderService autoStoreLocales，让 AppCompat 在 Activity 创建前恢复已选语言，降低启动时二次 recreate。验证命令：./gradlew :app:compileLocalDebugKotlin :app:testLocalDebugUnitTest，结果 BUILD SUCCESSFUL。
 ```
