@@ -17,5 +17,4 @@ sealed class WeatherRoute(val route: String) {
     data object AddCity : WeatherRoute("weather/add-city")
     data object Settings : WeatherRoute("weather/settings")
     data object About : WeatherRoute("weather/about")
-    data object Privacy : WeatherRoute("weather/privacy")
 }

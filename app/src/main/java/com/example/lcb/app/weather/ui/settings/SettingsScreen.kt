@@ -61,6 +61,7 @@ import com.example.lcb.app.weather.domain.model.TemperatureUnit
 import com.example.lcb.app.weather.domain.model.VisibilityUnit
 import com.example.lcb.app.weather.domain.model.WeatherSettings
 import com.example.lcb.app.weather.domain.model.WindSpeedUnit
+import com.example.lcb.app.weather.ui.ads.NativeAdSlot
 import com.example.lcb.app.weather.ui.theme.GlassIconButton
 import com.example.lcb.app.weather.ui.theme.GlassOnSurface
 import com.example.lcb.app.weather.ui.theme.GlassOnSurfaceFaint
@@ -197,7 +198,9 @@ fun SettingsScreen(
                 onClick = onPrivacy
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+            NativeAdSlot(modifier = Modifier.padding(horizontal = 18.dp))
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 

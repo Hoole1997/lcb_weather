@@ -402,16 +402,14 @@ sortIndex
 
 ### 隐私协议
 
-- [x] ✅ 说明定位用途：用于获取当前位置天气。
-- [x] ✅ 说明城市数据保存方式：保存在本地设备。
-- [x] ✅ 说明天气数据来源：Open-Meteo。
-- [x] ✅ 说明不主动上传用户保存的城市列表到自有服务器。
-- [x] ✅ 说明拒绝定位后仍可手动搜索城市。
+- [x] ✅ 设置页隐私入口不再打开 App 内页面。
+- [x] ✅ 设置页隐私入口通过系统浏览器打开线上隐私协议网页。
 
 阶段备注：
 
 ```text
 已完成关于页与隐私协议。app_name 已从 LCB_Template 改为“天气”。新增 ui/about/AboutScreens.kt，并在 WeatherNavGraph 关于/隐私路由中替换占位页。关于页显示 App 名称、BuildConfig.VERSION_NAME、Open-Meteo 数据来源、Weather Forecast API/Geocoding API、联系方式占位和数据说明。隐私协议说明定位仅用于首次获取当前位置天气、拒绝定位仍可手动搜索、城市列表和设置保存在本地、不主动上传到自有服务器、天气请求会向 Open-Meteo 发送经纬度和单位参数。验证命令：./gradlew :app:compileLocalDebugKotlin，结果 BUILD SUCCESSFUL。
+2026-05-11 变更隐私入口：根据最新需求移除 App 内 PrivacyScreen 和 weather/privacy 路由，设置页隐私协议入口改为 ACTION_VIEW 打开外部浏览器。隐私 URL 不放入 strings.xml，集中放在 WeatherNavGraph.kt 的 Kotlin 常量 PrivacyPolicyUrl，后续替换正式链接只改一处。验证命令：./gradlew :app:compileLocalDebugKotlin，结果 BUILD SUCCESSFUL。
 ```
 
 ## 阶段 12：UI/UX 完善
@@ -476,4 +474,8 @@ sortIndex
 2026-05-11：语言切换扩展到繁中、日、韩、法、德、西、葡、意、俄。地理编码搜索按当前语言请求 Open-Meteo；城市搜索结果和城市管理列表通过 countryCode 动态展示本地化国家名，因此 App 模块内国家名不再依赖接口返回的固定语言文本。历史已保存城市如果没有 countryCode，会继续回退显示旧 country 文本。
 2026-05-11：修复真机运行崩溃 java.lang.IllegalAccessError: SavedCity.Companion inaccessible。原因是 SavedCity 是 @Serializable 数据类，类内 private companion object 在 kotlinx serialization 生成/运行时代码访问路径下触发权限错误。已移除 SavedCity 和 CitySearchResult 内的 private companion 常量，改为局部长度判断，不改变 UI 和存储结构。验证命令：./gradlew :app:compileLocalDebugKotlin :app:testLocalDebugUnitTest，结果 BUILD SUCCESSFUL。
 2026-05-11：修复进入 App 闪屏/闪烁风险。原因不是启动线程做重活，而是 WeatherApp 先用 WeatherSettings() 作为 DataStore 初始值，可能先将 AppCompat locale 重置为跟随系统，随后 DataStore 读到真实语言再 setApplicationLocales，触发 Activity recreate。已将设置收集初始值改为 null，DataStore 未加载完成前不调用 setApplicationLocales；同时在 Manifest 添加 AppCompat AppLocalesMetadataHolderService autoStoreLocales，让 AppCompat 在 Activity 创建前恢复已选语言，降低启动时二次 recreate。验证命令：./gradlew :app:compileLocalDebugKotlin :app:testLocalDebugUnitTest，结果 BUILD SUCCESSFUL。
+2026-05-11：修复语言切换不即时生效与资源缺失。MainActivity 从 ComponentActivity 改为 AppCompatActivity，使 AppCompatDelegate.setApplicationLocales 可以可靠触发当前 Activity recreate 并即时刷新 Compose stringResource。补齐 values-zh-rTW、values-ja、values-ko、values-fr、values-de、values-es、values-pt、values-it、values-ru，所有语言目录与默认 values 保持 135 个 string key 一致，避免选择非英文语言时大量回退中文。执行硬编码扫描未发现新的用户可见中文/英文 Text/contentDescription/title/message 硬编码；剩余硬编码为路由、格式占位符或符号展示。验证命令：./gradlew :app:compileLocalDebugKotlin :app:testLocalDebugUnitTest，结果 BUILD SUCCESSFUL。
+2026-05-11：修正插屏广告接入方式。BusinessAdExt.loadInterstitial 已封装请求、展示、失败和超时逻辑，天气业务侧不再使用 Compose remember gate 包一层状态；新增 Context.runAfterInterstitial，只负责把下一步导航动作传入 loadInterstitial 的 call 回调。当前城市列表进入城市、添加城市完成进入主天气页均只在 call 中执行导航，避免业务侧额外等待/判断广告内部状态。验证命令：./gradlew :app:compileLocalDebugKotlin，结果 BUILD SUCCESSFUL。
+2026-05-11：修复首页原生广告滑出屏幕后滑回会重新请求的问题。原因是 NativeAdSlot 放在 LazyColumn item 内，item 离屏后会被移出组合，重新进入时 AndroidView.factory 再次创建容器并调用 loadNative。新增 NativeAdSlotState 与 rememberNativeAdSlotState，首页在 LazyColumn 外持有广告容器状态，item 只负责重新挂载同一个 FrameLayout；同时移除广告回调里的临时 LogUtils 调试日志。验证命令：./gradlew :app:compileLocalDebugKotlin，结果 BUILD SUCCESSFUL。
+2026-05-12：修复城市列表页原生广告滑出屏幕后滑回会重新请求的问题。城市列表页同样将广告放在 LazyColumn item 内，离屏回收后会重新执行 NativeAdSlot 默认创建逻辑。已在 CityManagerScreen 的 LazyColumn 外创建 rememberNativeAdSlotState，并在 city-manager-native-ad item 内复用 NativeAdSlot(state)，使该页面内同一个广告容器只请求一次。验证命令：./gradlew :app:compileLocalDebugKotlin，结果 BUILD SUCCESSFUL。
 ```

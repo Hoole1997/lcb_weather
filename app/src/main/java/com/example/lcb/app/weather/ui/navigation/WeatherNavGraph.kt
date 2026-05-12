@@ -1,5 +1,7 @@
 package com.example.lcb.app.weather.ui.navigation
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -14,13 +16,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.lcb.app.LcbApp
 import com.example.lcb.app.weather.ui.about.AboutScreen
-import com.example.lcb.app.weather.ui.about.PrivacyScreen
 import com.example.lcb.app.weather.ui.addcity.AddCityRoute
+import com.example.lcb.app.weather.ui.ads.runAfterInterstitial
 import com.example.lcb.app.weather.ui.cities.CityManagerRoute
 import com.example.lcb.app.weather.ui.main.MainWeatherRoute
 import com.example.lcb.app.weather.ui.settings.SettingsRoute
 
 private const val NavTransitionMillis = 300
+private const val PrivacyPolicyUrl = "https://www.leafmotivation.com/privacy-policy"
 
 private val NavSpec = tween<androidx.compose.ui.unit.IntOffset>(
     durationMillis = NavTransitionMillis,
@@ -39,7 +42,8 @@ fun WeatherNavGraph(
     } else {
         WeatherRoute.Main.create(startCityId)
     }
-    val container = (LocalContext.current.applicationContext as LcbApp).weatherContainer
+    val context = LocalContext.current
+    val container = (context.applicationContext as LcbApp).weatherContainer
 
     NavHost(
         navController = navController,
@@ -104,9 +108,11 @@ fun WeatherNavGraph(
                 onBack = navController::popBackStack,
                 onAddCity = { navController.navigate(WeatherRoute.AddCity.route) },
                 onOpenCity = { cityId ->
-                    navController.navigate(WeatherRoute.Main.create(cityId)) {
-                        popUpTo(WeatherRoute.Main.route) {
-                            inclusive = true
+                    context.runAfterInterstitial {
+                        navController.navigate(WeatherRoute.Main.create(cityId)) {
+                            popUpTo(WeatherRoute.Main.route) {
+                                inclusive = true
+                            }
                         }
                     }
                 }
@@ -119,9 +125,11 @@ fun WeatherNavGraph(
                 geocodingRepository = container.geocodingRepository,
                 onBack = navController::popBackStack,
                 onAdded = { cityId ->
-                    navController.navigate(WeatherRoute.Main.create(cityId)) {
-                        popUpTo(WeatherRoute.AddCity.route) {
-                            inclusive = true
+                    context.runAfterInterstitial {
+                        navController.navigate(WeatherRoute.Main.create(cityId)) {
+                            popUpTo(WeatherRoute.AddCity.route) {
+                                inclusive = true
+                            }
                         }
                     }
                 }
@@ -133,16 +141,16 @@ fun WeatherNavGraph(
                 settingsStore = container.settingsStore,
                 onBack = navController::popBackStack,
                 onAbout = { navController.navigate(WeatherRoute.About.route) },
-                onPrivacy = { navController.navigate(WeatherRoute.Privacy.route) }
+                onPrivacy = {
+                    context.startActivity(
+                        Intent(Intent.ACTION_VIEW, Uri.parse(PrivacyPolicyUrl))
+                    )
+                }
             )
         }
 
         composable(WeatherRoute.About.route) {
             AboutScreen(onBack = navController::popBackStack)
-        }
-
-        composable(WeatherRoute.Privacy.route) {
-            PrivacyScreen(onBack = navController::popBackStack)
         }
     }
 }

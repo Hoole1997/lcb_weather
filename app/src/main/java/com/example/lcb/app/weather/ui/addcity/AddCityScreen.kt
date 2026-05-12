@@ -3,6 +3,7 @@ package com.example.lcb.app.weather.ui.addcity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,9 +39,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
@@ -51,6 +55,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lcb.app.R
 import com.example.lcb.app.weather.data.local.CityStore
 import com.example.lcb.app.weather.data.repository.GeocodingRepository
+import com.example.lcb.app.weather.ui.ads.NativeAdSlot
 import com.example.lcb.app.weather.ui.theme.GlassCard
 import com.example.lcb.app.weather.ui.theme.GlassIconButton
 import com.example.lcb.app.weather.ui.theme.GlassOnSurface
@@ -154,12 +159,18 @@ private fun AddCitySearchField(
     onValueChange: (String) -> Unit,
     placeholder: String
 ) {
+    val focusRequester = remember { FocusRequester() }
+    val interactionSource = remember { MutableInteractionSource() }
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(50))
             .background(Color.White.copy(alpha = 0.16f))
             .border(1.dp, Color.White.copy(alpha = 0.22f), RoundedCornerShape(50))
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) { focusRequester.requestFocus() }
             .padding(horizontal = 16.dp, vertical = 12.dp),
         contentAlignment = Alignment.CenterStart
     ) {
@@ -187,7 +198,10 @@ private fun AddCitySearchField(
                         color = GlassOnSurface,
                         fontSize = MaterialTheme.typography.bodyLarge.fontSize
                     ),
-                    cursorBrush = SolidColor(GlassOnSurface)
+                    cursorBrush = SolidColor(GlassOnSurface),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
                 )
             }
             if (value.isNotEmpty()) {
@@ -217,6 +231,9 @@ private fun SearchResults(
         verticalArrangement = Arrangement.spacedBy(10.dp),
         contentPadding = PaddingValues(bottom = 24.dp)
     ) {
+        item(key = "add-city-native-ad") {
+            NativeAdSlot()
+        }
         items(results, key = { it.city.id }) { item ->
             GlassCard(
                 modifier = Modifier

@@ -3,6 +3,7 @@ package com.example.lcb.app.weather.ui.cities
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,9 +38,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -53,6 +57,8 @@ import com.example.lcb.app.weather.data.local.SettingsStore
 import com.example.lcb.app.weather.data.repository.WeatherRepository
 import com.example.lcb.app.weather.domain.mapper.UnitConverter
 import com.example.lcb.app.weather.domain.model.TemperatureUnit
+import com.example.lcb.app.weather.ui.ads.NativeAdSlot
+import com.example.lcb.app.weather.ui.ads.rememberNativeAdSlotState
 import com.example.lcb.app.weather.ui.main.weatherTextForCode
 import com.example.lcb.app.weather.ui.theme.GlassCard
 import com.example.lcb.app.weather.ui.theme.GlassIconButton
@@ -118,6 +124,7 @@ fun CityManagerScreen(
         }
     }
     val cards = state.filteredCards
+    val nativeAdState = rememberNativeAdSlotState()
 
     StaticSkyBackground(palette = CityManagerSky) {
         Box(
@@ -171,6 +178,9 @@ fun CityManagerScreen(
                                 dragModifier = dragModifier
                             )
                         }
+                    }
+                    item(key = "city-manager-native-ad") {
+                        nativeAdState?.let { NativeAdSlot(state = it) }
                     }
                 }
             }
@@ -237,12 +247,18 @@ internal fun GlassSearchField(
     placeholder: String,
     modifier: Modifier = Modifier
 ) {
+    val focusRequester = remember { FocusRequester() }
+    val interactionSource = remember { MutableInteractionSource() }
     Box(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(50))
             .background(Color.White.copy(alpha = 0.16f))
             .border(1.dp, Color.White.copy(alpha = 0.22f), RoundedCornerShape(50))
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) { focusRequester.requestFocus() }
             .padding(horizontal = 16.dp, vertical = 12.dp),
         contentAlignment = Alignment.CenterStart
     ) {
@@ -270,7 +286,10 @@ internal fun GlassSearchField(
                         color = GlassOnSurface,
                         fontSize = MaterialTheme.typography.bodyLarge.fontSize
                     ),
-                    cursorBrush = androidx.compose.ui.graphics.SolidColor(GlassOnSurface)
+                    cursorBrush = androidx.compose.ui.graphics.SolidColor(GlassOnSurface),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
                 )
             }
             if (value.isNotEmpty()) {

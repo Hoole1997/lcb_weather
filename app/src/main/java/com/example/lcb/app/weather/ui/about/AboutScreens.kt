@@ -1,11 +1,8 @@
 package com.example.lcb.app.weather.ui.about
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,9 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.MaterialTheme
@@ -37,7 +32,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.example.lcb.app.BuildConfig
 import com.example.lcb.app.R
-import com.example.lcb.app.weather.ui.theme.GlassCard
 import com.example.lcb.app.weather.ui.theme.GlassIconButton
 import com.example.lcb.app.weather.ui.theme.GlassOnSurface
 import com.example.lcb.app.weather.ui.theme.GlassOnSurfaceFaint
@@ -49,7 +43,7 @@ import com.example.lcb.app.weather.ui.settings.SettingsSky
 fun AboutScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val iconBitmap = remember {
-        ContextCompat.getDrawable(context, R.mipmap.ic_launcher)
+        ContextCompat.getDrawable(context, R.mipmap.logo_round)
             ?.toBitmap(width = 216, height = 216)
             ?.asImageBitmap()
     }
@@ -126,98 +120,6 @@ fun AboutScreen(onBack: () -> Unit) {
                 style = MaterialTheme.typography.bodySmall,
                 color = GlassOnSurfaceFaint,
                 textAlign = TextAlign.Center
-            )
-        }
-    }
-}
-
-@Composable
-fun PrivacyScreen(onBack: () -> Unit) {
-    InfoPage(title = stringResource(R.string.privacy_policy), onBack = onBack) {
-        InfoBlock(
-            title = stringResource(R.string.privacy_location),
-            lines = listOf(
-                stringResource(R.string.privacy_location_line_1),
-                stringResource(R.string.privacy_location_line_2)
-            )
-        )
-        InfoBlock(
-            title = stringResource(R.string.privacy_local_data),
-            lines = listOf(
-                stringResource(R.string.privacy_local_data_line_1),
-                stringResource(R.string.privacy_local_data_line_2)
-            )
-        )
-        InfoBlock(
-            title = stringResource(R.string.privacy_weather_data),
-            lines = listOf(
-                stringResource(R.string.privacy_weather_data_line_1),
-                stringResource(R.string.privacy_weather_data_line_2)
-            )
-        )
-    }
-}
-
-@Composable
-private fun InfoPage(
-    title: String,
-    onBack: () -> Unit,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    StaticSkyBackground(palette = SettingsSky) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .systemBarsPadding()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 18.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                GlassIconButton(
-                    icon = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.back),
-                    onClick = onBack
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = title,
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = GlassOnSurface
-                )
-            }
-            Spacer(modifier = Modifier.height(20.dp))
-            Column(
-                verticalArrangement = Arrangement.spacedBy(14.dp),
-                content = content
-            )
-            Spacer(modifier = Modifier.height(28.dp))
-        }
-    }
-}
-
-@Composable
-private fun InfoBlock(
-    title: String,
-    lines: List<String>
-) {
-    GlassCard(contentPadding = PaddingValues(18.dp)) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            color = GlassOnSurface
-        )
-        lines.forEach { line ->
-            Text(
-                modifier = Modifier.padding(top = 8.dp),
-                text = line,
-                style = MaterialTheme.typography.bodyMedium,
-                color = GlassOnSurfaceMuted
             )
         }
     }

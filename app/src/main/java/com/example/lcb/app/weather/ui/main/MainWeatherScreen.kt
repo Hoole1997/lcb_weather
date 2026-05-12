@@ -51,7 +51,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
+import androidx.activity.compose.BackHandler
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.lcb.app.LcbApp
 import com.example.lcb.app.R
 import com.example.lcb.app.weather.data.local.CityStore
 import com.example.lcb.app.weather.data.local.SettingsStore
@@ -62,6 +64,8 @@ import com.example.lcb.app.weather.domain.model.DailyForecast
 import com.example.lcb.app.weather.domain.model.HourlyForecast
 import com.example.lcb.app.weather.domain.model.WeatherReport
 import com.example.lcb.app.weather.domain.model.WeatherSettings
+import com.example.lcb.app.weather.ui.ads.NativeAdSlot
+import com.example.lcb.app.weather.ui.ads.rememberNativeAdSlotState
 import com.example.lcb.app.weather.ui.theme.GlassCard
 import com.example.lcb.app.weather.ui.theme.GlassIconButton
 import com.example.lcb.app.weather.ui.theme.GlassOnSurface
@@ -110,6 +114,7 @@ fun MainWeatherScreen(
     onOpenSettings: () -> Unit,
     onAddCity: () -> Unit
 ) {
+    BackHandler { LcbApp.backLaunchActivity() }
     val report = state.report
     val loadingError = state.errorMessage ?: state.errorMessageRes?.let { stringResource(it) }
     WeatherSkyBackground(current = report?.current) {
@@ -140,6 +145,7 @@ private fun WeatherContent(
 ) {
     val pullState = rememberPullToRefreshState()
     val contentError = state.errorMessage ?: state.errorMessageRes?.let { stringResource(it) }
+    val nativeAdState = rememberNativeAdSlotState()
     PullToRefreshBox(
         modifier = Modifier
             .fillMaxSize()
@@ -173,34 +179,37 @@ private fun WeatherContent(
                     onOpenSettings = onOpenSettings
                 )
             }
-        item {
-            CurrentWeatherHero(
-                current = report.current,
-                settings = state.settings,
-                onRetry = onRetry,
-                errorMessage = contentError,
-                isLoading = state.isLoading
-            )
-        }
-        item {
-            HourlyForecastSection(
-                hourly = report.hourly.take(24),
-                settings = state.settings,
-                currentTime = report.current.time
-            )
-        }
-        item {
-            DailyForecastSection(
-                daily = report.daily.take(10),
-                settings = state.settings
-            )
-        }
-        item {
-            MetricsSection(
-                current = report.current,
-                settings = state.settings
-            )
-        }
+            item {
+                CurrentWeatherHero(
+                    current = report.current,
+                    settings = state.settings,
+                    onRetry = onRetry,
+                    errorMessage = contentError,
+                    isLoading = state.isLoading
+                )
+            }
+            item {
+                HourlyForecastSection(
+                    hourly = report.hourly.take(24),
+                    settings = state.settings,
+                    currentTime = report.current.time
+                )
+            }
+            item {
+                nativeAdState?.let { NativeAdSlot(state = it) }
+            }
+            item {
+                DailyForecastSection(
+                    daily = report.daily.take(10),
+                    settings = state.settings
+                )
+            }
+            item {
+                MetricsSection(
+                    current = report.current,
+                    settings = state.settings
+                )
+            }
         }
     }
 }
