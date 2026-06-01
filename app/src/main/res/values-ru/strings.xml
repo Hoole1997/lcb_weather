@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">Погода</string>
     <string name="startup_tagline">Погода в реальном времени, прогноз на 24 часа и на 10 дней на основе данных Open-Meteo.</string>
     <string name="startup_default_city_ready">Город по умолчанию готов: %1$s</string>
     <string name="choose_city">Выберите город</string>

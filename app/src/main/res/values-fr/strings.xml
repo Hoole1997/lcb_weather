@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">Météo</string>
     <string name="startup_tagline">Météo en temps réel, prévisions sur 24 heures et tendance à 10 jours, données fournies par Open-Meteo.</string>
     <string name="startup_default_city_ready">Ville par défaut prête : %1$s</string>
     <string name="choose_city">Choisir une ville</string>

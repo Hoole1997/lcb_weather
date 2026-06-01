@@ -17,5 +17,5 @@ class AppContainer(context: Context) {
     val settingsStore = SettingsStore(dataStore)
     val weatherRepository = WeatherRepository(NetworkModule.createForecastApi())
     val geocodingRepository = GeocodingRepository(NetworkModule.createGeocodingApi())
-    val locationRepository = LocationRepository(appContext)
+    val locationRepository = LocationRepository(NetworkModule.createIpGeolocationApi())
 }

@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">Weather</string>
     <string name="startup_tagline">Real-time weather, 24-hour forecast, and 10-day outlook powered by Open-Meteo.</string>
     <string name="startup_default_city_ready">Default city ready: %1$s</string>
     <string name="choose_city">Choose a city</string>

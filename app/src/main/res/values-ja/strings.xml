@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">天気</string>
     <string name="startup_tagline">リアルタイム天気、24時間予報、10日間予報。データ提供: Open-Meteo。</string>
     <string name="startup_default_city_ready">デフォルト都市の準備ができました: %1$s</string>
     <string name="choose_city">都市を選択</string>

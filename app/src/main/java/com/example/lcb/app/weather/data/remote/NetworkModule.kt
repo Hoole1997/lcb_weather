@@ -29,6 +29,10 @@ object NetworkModule {
         return retrofit("https://geocoding-api.open-meteo.com/").create(OpenMeteoGeocodingApi::class.java)
     }
 
+    fun createIpGeolocationApi(): IpGeolocationApi {
+        return retrofit("https://ipapi.co/").create(IpGeolocationApi::class.java)
+    }
+
     private fun retrofit(baseUrl: String): Retrofit {
         return Retrofit.Builder()
             .baseUrl(baseUrl)

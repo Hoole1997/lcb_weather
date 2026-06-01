@@ -17,7 +17,6 @@ import kotlinx.coroutines.launch
 
 data class StartupUiState(
     val isLoading: Boolean = true,
-    val needsLocationPermission: Boolean = false,
     val needsCitySelection: Boolean = false,
     val activeCityId: String? = null,
     @param:StringRes val messageRes: Int = R.string.startup_preparing_weather,
@@ -51,48 +50,18 @@ class StartupViewModel(
                 return@launch
             }
 
-            if (locationRepository.hasLocationPermission()) {
-                loadCurrentLocation()
-            } else {
-                _uiState.value = StartupUiState(
-                    isLoading = false,
-                    needsLocationPermission = true,
-                    messageRes = R.string.startup_location_permission_needed
-                )
-            }
-        }
-    }
-
-    fun onLocationPermissionResult(granted: Boolean) {
-        if (granted) {
             loadCurrentLocation()
-        } else {
-            _uiState.value = StartupUiState(
-                isLoading = false,
-                needsCitySelection = true,
-                messageRes = R.string.startup_manual_city_available,
-                errorMessageRes = R.string.location_permission_denied
-            )
         }
     }
 
     fun retryLocation() {
-        if (locationRepository.hasLocationPermission()) {
-            loadCurrentLocation()
-        } else {
-            _uiState.value = StartupUiState(
-                isLoading = false,
-                needsLocationPermission = true,
-                messageRes = R.string.startup_location_permission_needed
-            )
-        }
+        loadCurrentLocation()
     }
 
     fun chooseCityManually() {
         _uiState.update {
             it.copy(
                 isLoading = false,
-                needsLocationPermission = false,
                 needsCitySelection = true,
                 messageRes = R.string.startup_search_add_city,
                 errorMessageRes = null,

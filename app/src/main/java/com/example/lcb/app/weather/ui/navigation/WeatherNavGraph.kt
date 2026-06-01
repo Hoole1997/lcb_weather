@@ -23,7 +23,7 @@ import com.example.lcb.app.weather.ui.main.MainWeatherRoute
 import com.example.lcb.app.weather.ui.settings.SettingsRoute
 
 private const val NavTransitionMillis = 300
-private const val PrivacyPolicyUrl = "https://www.leafmotivation.com/privacy-policy"
+private const val PrivacyPolicyUrl = "https://gourmetlntro.com/privacy.html"
 
 private val NavSpec = tween<androidx.compose.ui.unit.IntOffset>(
     durationMillis = NavTransitionMillis,

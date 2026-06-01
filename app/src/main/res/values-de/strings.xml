@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">Wetter</string>
     <string name="startup_tagline">Aktuelles Wetter, 24-Stunden-Vorhersage und 10-Tage-Ausblick mit Daten von Open-Meteo.</string>
     <string name="startup_default_city_ready">Standardstadt bereit: %1$s</string>
     <string name="choose_city">Stadt auswählen</string>

@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">날씨</string>
     <string name="startup_tagline">실시간 날씨, 24시간 예보, 10일 예보를 Open-Meteo 데이터로 제공합니다.</string>
     <string name="startup_default_city_ready">기본 도시 준비됨: %1$s</string>
     <string name="choose_city">도시를 선택하세요</string>

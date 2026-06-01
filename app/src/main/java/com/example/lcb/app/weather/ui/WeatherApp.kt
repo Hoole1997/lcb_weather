@@ -1,8 +1,7 @@
 package com.example.lcb.app.weather.ui
 
-import android.Manifest
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import android.content.Context
+import android.content.ContextWrapper
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,6 +21,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -38,6 +38,7 @@ import androidx.core.os.LocaleListCompat
 import androidx.compose.ui.res.stringResource
 import com.example.lcb.app.R
 import com.example.lcb.app.LcbApp
+import com.example.lcb.app.MainActivity
 import com.example.lcb.app.weather.domain.model.WeatherSettings
 import com.example.lcb.app.weather.ui.navigation.WeatherNavGraph
 import com.example.lcb.app.weather.ui.startup.StartupUiState
@@ -53,6 +54,7 @@ import com.example.lcb.app.weather.ui.theme.WeatherTheme
 @Composable
 fun WeatherApp() {
     val context = LocalContext.current
+    val activity = context.findMainActivity()
     val container = (context.applicationContext as LcbApp).weatherContainer
     val settings by container.settingsStore.settings.collectAsState(initial = null)
     val darkTheme = isSystemInDarkTheme()
@@ -65,19 +67,18 @@ fun WeatherApp() {
         )
     )
     val startupState by startupViewModel.uiState.collectAsState()
-    val locationPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        startupViewModel.onLocationPermissionResult(granted)
-    }
 
     LaunchedEffect(Unit) {
         startupViewModel.start()
     }
 
-    LaunchedEffect(startupState.needsLocationPermission) {
-        if (startupState.needsLocationPermission) {
-            locationPermissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+    LaunchedEffect(activity, startupState.isLoading) {
+        activity?.setStartupBackLaunchEnabled(startupState.isLoading)
+    }
+
+    DisposableEffect(activity) {
+        onDispose {
+            activity?.setStartupBackLaunchEnabled(false)
         }
     }
 
@@ -201,6 +202,15 @@ private fun StartupScreen(
             }
         }
     }
+}
+
+private fun Context.findMainActivity(): MainActivity? {
+    var current: Context? = this
+    while (current is ContextWrapper) {
+        if (current is MainActivity) return current
+        current = current.baseContext
+    }
+    return null
 }
 
 @Preview(showBackground = true)

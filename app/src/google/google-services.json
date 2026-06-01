@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "868319807008",
+    "project_id": "agaabb9c6832-dd401-gp",
+    "storage_bucket": "agaabb9c6832-dd401-gp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:868319807008:android:5dad8f5a11736f66031e45",
+        "android_client_info": {
+          "package_name": "com.local.weather.daily.tool"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvyksbWlBsMEr-1ek3_nRPRWWK-7zzJO4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
