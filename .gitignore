@@ -13,3 +13,4 @@ captures/
 .cxx/
 *.keystore
 *.jks
+!app/src/google/google-release.keystore

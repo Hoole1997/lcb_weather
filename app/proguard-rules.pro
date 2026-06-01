@@ -19,3 +19,11 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Keep generated resource classes for SDKs that access resources via reflection
+# or build resource identifiers from class names/field names at runtime.
+-keep class **.R
+-keep class **.R$* { *; }
+
+# Keep annotation metadata for SDKs that inspect annotations at runtime.
+-keepattributes *Annotation*

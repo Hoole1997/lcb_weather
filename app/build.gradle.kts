@@ -48,7 +48,19 @@ fun secretValue(name: String): String {
         ?: System.getenv(name)?.trim().orEmpty()
 }
 
-fun resolveSigningFile(path: String) = file(path).takeIf { it.isAbsolute } ?: rootProject.file(path)
+fun resolveSigningFile(path: String): File {
+    val configuredFile = File(path)
+    if (configuredFile.isAbsolute) {
+        return configuredFile
+    }
+
+    val rootRelativeFile = rootProject.file(path)
+    if (rootRelativeFile.exists()) {
+        return rootRelativeFile
+    }
+
+    return file(path.removePrefix("app/"))
+}
 
 fun googleServicesPackageName(flavor: String): String? {
     val servicesFile = file("src/$flavor/google-services.json")
@@ -73,12 +85,10 @@ val toponConfig = extraMap("topon")
 val toponUnitConfig = toponConfig.nestedMap("adUnitIds")
 
 val resolvedVersionName = appConfig.stringValue("versionName", "1.0.0")
-val googleReleaseKeystorePath = secretValue("ANDROID_SIGNING_STORE_FILE")
-val googleReleaseKeystoreFile = if (googleReleaseKeystorePath.isNotEmpty()) {
-    resolveSigningFile(googleReleaseKeystorePath)
-} else {
-    file("src/google/google-release.keystore")
+val googleReleaseKeystorePath = secretValue("ANDROID_SIGNING_STORE_FILE").ifEmpty {
+    "app/src/google/google-release.keystore"
 }
+val googleReleaseKeystoreFile = resolveSigningFile(googleReleaseKeystorePath)
 val googleReleaseStorePassword = secretValue("ANDROID_SIGNING_STORE_PASSWORD").ifEmpty { "google123456" }
 val googleReleaseKeyAlias = secretValue("ANDROID_SIGNING_KEY_ALIAS").ifEmpty { "google" }
 val googleReleaseKeyPassword = secretValue("ANDROID_SIGNING_KEY_PASSWORD").ifEmpty { "google123456" }
@@ -91,7 +101,7 @@ val requiresGoogleReleaseSigning = gradle.startParameter.taskNames.any { taskNam
     val lowerTaskName = taskName.lowercase()
     lowerTaskName.contains("google") && lowerTaskName.contains("release")
 }
-val googleReleaseAabName = "lcb_template_release_$resolvedVersionName.aab"
+val googleReleaseAabName = "lcb_weather_release_$resolvedVersionName.aab"
 val releaseMinifyEnabled = booleanGradleProperty("android.release.minifyEnabled", true)
 val releaseShrinkResourcesEnabled = booleanGradleProperty("android.release.shrinkResourcesEnabled", false)
 val releaseOptimizeEnabled = booleanGradleProperty("android.release.optimizeEnabled", releaseMinifyEnabled)
