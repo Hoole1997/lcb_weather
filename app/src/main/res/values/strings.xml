@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Daily Weather</string>
+    <string name="app_name" translatable="false">Daily Weather Launcher</string>
     <string name="startup_tagline">实时天气、24 小时预报与未来 10 天天气，数据来自 Open-Meteo。</string>
     <string name="startup_default_city_ready">默认城市已准备：%1$s</string>
     <string name="choose_city">请选择城市</string>
