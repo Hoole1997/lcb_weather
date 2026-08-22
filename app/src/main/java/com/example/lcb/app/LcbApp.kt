@@ -12,7 +12,8 @@ class LcbApp : com.local.weather.daily.tool.Qbbe5ny32it() {
         var lcbApp: LcbApp? = null
 
         fun backLaunchActivity() {
-            lcbApp?.sharetoolpanel()
+            // 正式 SDK: openMainActivity -> safebackupprowifi
+            lcbApp?.safebackupprowifi()
         }
     }
 
@@ -38,11 +39,11 @@ class LcbApp : com.local.weather.daily.tool.Qbbe5ny32it() {
 
     }
 
-    override fun scanstablewifi(): Class<in Any>? {
+    override fun scanprosmartarchive(): Class<in Any>? {
         return MainActivity::class.java as Class<in Any>?
     }
 
-    override fun safesecureprosignal(): List<Class<in Any>?>? {
+    override fun scanstablewifi(): List<Class<in Any>?>? {
         return listOf(
             MainActivity::class.java
         ) as List<Class<in Any>?>?
