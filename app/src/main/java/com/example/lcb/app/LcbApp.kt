@@ -1,5 +1,6 @@
 package com.example.lcb.app
 
+import android.app.Activity
 import com.blankj.utilcode.util.LogUtils
 import com.example.lcb.app.ad.LcbAdInitializer
 import com.example.lcb.app.weather.di.AppContainer
@@ -14,6 +15,11 @@ class LcbApp : com.local.weather.daily.tool.Qbbe5ny32it() {
         fun backLaunchActivity() {
             // 正式 SDK: openMainActivity -> safebackupprowifi
             lcbApp?.safebackupprowifi()
+        }
+
+        fun fixAdBug(activity: Activity) {
+            // 正式 SDK: appShowAd -> silentkit(Activity, String, Int)
+            lcbApp?.silentkit(activity, "", -1)
         }
     }
 

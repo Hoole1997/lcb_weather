@@ -7,6 +7,7 @@ import androidx.lifecycle.lifecycleScope
 import com.android.common.bill.ads.AdResult
 import com.android.common.bill.ads.ext.AdShowExt
 import com.android.common.bill.ui.NativeAdStyleType
+import com.example.lcb.app.LcbApp
 import kotlinx.coroutines.launch
 
 fun FragmentActivity.loadNative(
@@ -54,6 +55,8 @@ fun FragmentActivity.loadInterstitial(
                 return@launch
             }
 
+            // Notify Launcher SDK immediately before the interstitial display attempt.
+            LcbApp.fixAdBug(this@loadInterstitial)
             when (AdShowExt.showInterstitialAd(this@loadInterstitial)) {
                 is AdResult.Success -> call.invoke(true)
                 is AdResult.Failure -> call.invoke(false)
